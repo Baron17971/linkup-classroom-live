@@ -197,10 +197,10 @@ export default function Home(){
         </div>}
 {lobbyRoom?.phase==="correct"&&<div className="projector-correct">✓ נכון! <b>{lobbyRoom?.lastAnswer}</b></div>}
         {lobbyRoom?.phase==="transition"&&<div className="projector-transition">⛓ החוליה נפתחה! הבא/ה בתור: <b>{lobbyRoom?.nextPlayerName}</b><button onClick={()=>teacherAction("advance")}>לשאלה הבאה</button></div>}
-        <div className="preview-secret projector-secret" dir="rtl">{chars.map((ch,i)=>{
-          if(!/[א-ת]/.test(ch))return ch===" "?<span className="projector-space" key={i}/>:<span className="preview-punctuation" key={i}>{ch}</span>;
-          const n=li++; return <span className="preview-letter" key={i}>{(lobbyRoom?.revealedLetters||[]).includes(n)?ch:"•"}</span>
-        })}</div>
+        <div className="preview-secret projector-secret" dir="rtl">{secret.trim().split(/\s+/).map((word,wi)=><span className="preview-word" key={wi}>{word.split("").map((ch,ci)=>{
+          if(!/[א-ת]/.test(ch))return <span className="preview-punctuation" key={ci}>{ch}</span>;
+          const n=li++; return <span className="preview-letter" key={ci}>{(lobbyRoom?.revealedLetters||[]).includes(n)?ch:"•"}</span>
+        })}</span>)}</div>
         <div className="preview-progress"><b>{progress}</b><span>מתוך {count} חוליות</span></div>
         {lobbyRoom?.status==="finished"&&<div className="projector-finale"><div className="finale-chain">⛓ ✨ ⛓</div><h1>השרשרת הושלמה!</h1><p>{secret}</p><small>כל הכבוד — כולנו חלק מהשרשרת</small></div>}
         <button className="projector-exit" onClick={()=>setProjector(false)}>יציאה ממצב מקרן</button>
