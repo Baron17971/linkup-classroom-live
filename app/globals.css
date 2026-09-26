@@ -213,3 +213,107 @@ textarea{min-height:110px;resize:vertical}
   .item-two{grid-template-columns:1fr}
   .item-number{top:10px;left:10px}
 }
+
+.final-next{min-width:190px}
+.next:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+@media(max-width:720px){
+  .wizard-nav{
+    position:sticky;
+    bottom:0;
+    z-index:12;
+    background:rgba(255,253,248,.96);
+    backdrop-filter:blur(8px);
+    border-top:1px solid #e6ece8;
+    padding:12px 18px calc(12px + env(safe-area-inset-bottom));
+  }
+  .final-next{min-width:0}
+}
+
+.lobby-shell{
+  min-height:100vh;
+  padding:28px 18px;
+  display:grid;
+  place-items:center;
+  direction:rtl;
+  background:
+    radial-gradient(circle at 15% 10%,rgba(34,183,178,.14),transparent 28%),
+    radial-gradient(circle at 90% 20%,rgba(215,169,75,.12),transparent 24%),
+    linear-gradient(180deg,#fffdf8,#f5eee0);
+}
+.lobby-card{
+  width:min(100%,760px);
+  background:rgba(255,253,248,.96);
+  border:1px solid rgba(34,143,150,.14);
+  border-radius:30px;
+  box-shadow:0 24px 70px rgba(53,80,83,.12);
+  padding:28px;
+  text-align:center;
+}
+.lobby-logo{width:min(330px,70%);height:auto}
+.lobby-kicker{
+  display:inline-block;
+  margin-top:4px;
+  padding:6px 12px;
+  border-radius:999px;
+  background:#e4f7f3;
+  color:#0f8f96;
+  font-weight:900;
+  font-size:13px;
+}
+.lobby-card h1{margin:14px 0 6px;font-size:34px;color:#163f54}
+.lobby-sub{margin:0 0 22px;color:#728b92}
+.room-code-box{
+  border:1px solid #cfe6e1;
+  border-radius:22px;
+  background:linear-gradient(135deg,#edf9f7,#fff5df);
+  padding:20px;
+  display:grid;
+  gap:4px;
+}
+.room-code-box span{color:#5f7d84;font-weight:800}
+.room-code-box strong{
+  font-size:46px;
+  letter-spacing:8px;
+  color:#0f8f96;
+  direction:ltr;
+}
+.room-code-box small{color:#7e9195}
+.lobby-stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+  margin:18px 0;
+}
+.lobby-stats div{
+  border:1px solid #e1e9e6;
+  border-radius:16px;
+  background:#fff;
+  padding:14px 8px;
+  display:grid;
+  gap:4px;
+}
+.lobby-stats b{font-size:26px;color:#158b8f}
+.lobby-stats span{font-size:12px;color:#758c92}
+.lobby-wait{
+  margin:18px 0;
+  padding:13px;
+  border-radius:14px;
+  background:#f5f0e6;
+  color:#57737a;
+  font-weight:800;
+}
+.lobby-actions{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  margin-top:18px;
+}
+@media(max-width:720px){
+  .lobby-shell{padding:0}
+  .lobby-card{min-height:100vh;border-radius:0;padding:22px 18px}
+  .lobby-logo{width:min(300px,78%)}
+  .lobby-card h1{font-size:28px}
+  .room-code-box strong{font-size:40px;letter-spacing:6px}
+  .lobby-stats{grid-template-columns:1fr}
+  .lobby-actions{position:sticky;bottom:0;background:rgba(255,253,248,.96);padding:12px 0 calc(12px + env(safe-area-inset-bottom));}
+}
