@@ -152,6 +152,14 @@ export default function Home(){
     }
   }
 
+  async function teacherAction(action){
+    if(!roomCode||!teacherToken)return;
+    try{
+      const r=await fetch("/api/game",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action,code:roomCode,token:teacherToken})});
+      const d=await r.json(); if(!r.ok)throw new Error(d.error||"הפעולה נכשלה"); setRoomError("");
+    }catch(e){setRoomError(e.message)}
+  }
+
   async function startGame(){
     if(!roomCode||!teacherToken)return;
     try{
@@ -184,14 +192,17 @@ export default function Home(){
         {lobbyRoom?.status==="playing"&&<div className="projector-question-panel">
           <small>השאלה של {lobbyRoom?.currentPlayerName||""}</small>
           <h2>{lobbyRoom?.currentQuestion||""}</h2>
-          <div className="projector-live-answer" dir="rtl">{lobbyRoom?.liveAnswer||"ממתינים לתשובה…"}</div>
+          <div className="projector-answer-boxes" dir="rtl">{(lobbyRoom?.currentAnswer||"").split(/(\s+)/).map((part,pi)=>/^\s+$/.test(part)?<i key={pi}/>:<span className="projector-answer-word" key={pi}>{part.split("").map((_,i)=>{const before=(lobbyRoom.currentAnswer||"").split(/(\s+)/).slice(0,pi).filter(x=>!/^\s+$/.test(x)).join("").length;return <b key={i}>{(lobbyRoom?.liveAnswer||"").replace(/\s/g,"")[before+i]||""}</b>})}</span>)}</div>
+          {lobbyRoom?.feedback==="wrong"&&<div className="projector-wrong">לא נכון — נסו שוב</div>}
         </div>}
+{lobbyRoom?.phase==="correct"&&<div className="projector-correct">✓ נכון! <b>{lobbyRoom?.lastAnswer}</b></div>}
+        {lobbyRoom?.phase==="transition"&&<div className="projector-transition">⛓ החוליה נפתחה! הבא/ה בתור: <b>{lobbyRoom?.nextPlayerName}</b><button onClick={()=>teacherAction("advance")}>לשאלה הבאה</button></div>}
         <div className="preview-secret projector-secret" dir="rtl">{chars.map((ch,i)=>{
           if(!/[א-ת]/.test(ch))return ch===" "?<span className="projector-space" key={i}/>:<span className="preview-punctuation" key={i}>{ch}</span>;
           const n=li++; return <span className="preview-letter" key={i}>{(lobbyRoom?.revealedLetters||[]).includes(n)?ch:"•"}</span>
         })}</div>
         <div className="preview-progress"><b>{progress}</b><span>מתוך {count} חוליות</span></div>
-        {lobbyRoom?.status==="finished"&&<div className="projector-finish">השרשרת הושלמה!</div>}
+        {lobbyRoom?.status==="finished"&&<div className="projector-finale"><div className="finale-chain">⛓ ✨ ⛓</div><h1>השרשרת הושלמה!</h1><p>{secret}</p><small>כל הכבוד — כולנו חלק מהשרשרת</small></div>}
         <button className="projector-exit" onClick={()=>setProjector(false)}>יציאה ממצב מקרן</button>
       </div>
     </main>;
@@ -277,6 +288,12 @@ export default function Home(){
 
         <div className="lobby-actions">
           <button className="projector-button" onClick={()=>setProjector(true)}>מצב מקרן</button>
+          {["playing","paused"].includes(lobbyRoom?.status)&&<div className="teacher-live-controls">
+            <button onClick={()=>teacherAction("skip")}>דלג על שאלה</button>
+            <button onClick={()=>teacherAction("next_player")}>העבר תור</button>
+            <button onClick={()=>teacherAction("reveal")}>חשוף/אשר תשובה</button>
+            <button onClick={()=>teacherAction("pause")}>{lobbyRoom?.status==="paused"?"המשך משחק":"עצור משחק"}</button>
+          </div>}
           <button className="back" onClick={()=>{setView("teacher");setStep(4)}}>חזרה לעריכה</button>
           <button className="next" onClick={startGame} disabled={!lobbyRoom?.participantCount||lobbyRoom?.status==="playing"}>{lobbyRoom?.status==="playing"?"המשחק התחיל":"התחל משחק"}</button>
         </div>
