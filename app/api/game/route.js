@@ -89,7 +89,6 @@ export async function POST(req){
       answer:clean(x.answer,100),
       hint:clean(x.hint,200)
     })).filter(x=>x.question&&x.answer).slice(0,60);
-    if(!items.length)return Response.json({error:"צריך לטעון מאגר שאלות לפני פתיחת החדר"},{status:400});
     const code=await freshCode();
     const teacherToken=token();
     const room={
@@ -117,6 +116,7 @@ export async function POST(req){
   if(action==="start"){
     if(!teacherOK(room,body.token))return Response.json({error:"forbidden"},{status:403});
     if(!Object.keys(room.participants||{}).length)return Response.json({error:"אין עדיין תלמידים מחוברים"},{status:409});
+    if(!(room.items||[]).length)return Response.json({error:"אין עדיין שאלות במאגר. חזרו לעריכה וטענו את המאגר לפני תחילת המשחק."},{status:409});
     room.status="playing";
     await save(room);
     return Response.json({
