@@ -41,7 +41,8 @@ function publicRoom(room){
     questionCount:room.items?.length||0,
     version:room.version||0,
     progress:room.progress||0,
-    liveAnswer:room.liveAnswer||""
+    liveAnswer:room.liveAnswer||"",
+    revealedLetters:room.revealedLetters||[]
   };
 }
 
@@ -102,7 +103,7 @@ export async function POST(req){
     const teacherToken=token();
     const room={
       code,teacherToken,topic,subject,grade,instructions,count,theme,secret,items,
-      status:"lobby",participants:{},progress:0,currentTurn:0,liveAnswer:"",version:0,createdAt:Date.now()
+      status:"lobby",participants:{},progress:0,currentTurn:0,liveAnswer:"",revealedLetters:[],version:0,createdAt:Date.now()
     };
     await save(room);
     return Response.json({code,teacherToken});
@@ -159,6 +160,13 @@ export async function POST(req){
     const correct=norm(body.answer)===norm(item.answer);
     if(!correct){room.liveAnswer=clean(body.answer,120);await save(room);return Response.json({correct:false,hint:item.hint});}
     room.liveAnswer=clean(body.answer,120);
+    const letterCount=(room.secret||"").split("").filter(ch=>/[א-ת]/.test(ch)).length;
+    const revealed=new Set(room.revealedLetters||[]);
+    const available=Array.from({length:letterCount},(_,i)=>i).filter(i=>!revealed.has(i));
+    if(available.length){
+      const pick=available[crypto.randomInt(0,available.length)];
+      room.revealedLetters=[...revealed,pick];
+    }
     room.progress=(room.progress||0)+1;
     room.currentTurn=(room.currentTurn||0)+1;
     if(room.progress>=Math.min(room.count,room.items.length))room.status="finished";
