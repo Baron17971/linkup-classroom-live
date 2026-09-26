@@ -42,7 +42,7 @@ export default function Home(){
   return <main className="teacher-shell">
     <section className="teacher-card">
       <header className="brand-head">
-        <img src="/linkup-logo.png" alt="LinkUp — כולנו חלק מהשרשרת" className="brand-logo"/>
+        <img src="/linkup-logo.webp" alt="LinkUp — כולנו חלק מהשרשרת" className="brand-logo"/>
         <div className="brand-copy">
           <span>צד המורה</span>
           <h1>יצירת משחק חדש</h1>
