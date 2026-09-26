@@ -414,10 +414,11 @@ textarea{min-height:110px;resize:vertical}
   justify-content:center;
   column-gap:26px;
   row-gap:20px;
-  background:transparent;
-  border:0;
-  box-shadow:none;
-  backdrop-filter:none;
+  background:rgba(255,253,248,.82);
+  border:1px solid rgba(255,255,255,.68);
+  border-radius:26px;
+  box-shadow:0 14px 40px rgba(22,72,82,.10);
+  backdrop-filter:blur(4px);
 }
 .preview-word{
   display:inline-flex;
