@@ -63,6 +63,15 @@ export default function JoinRoom(){
     try{await fetch("/api/game",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"typing",code,participantId,answer:value})})}catch{}
   }
 
+  async function revealLetterHint(){
+    setHintMode("letter");
+    try{
+      const r=await fetch("/api/game",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"letter_hint",code,participantId})});
+      const d=await r.json(); if(!r.ok)throw new Error(d.error||"שגיאה");
+      setRoom(prev=>prev?{...prev,hintedLetters:d.hintedLetters,turn:{...prev.turn,hintedLetters:d.hintedLetters}}:prev);
+    }catch(e){setError(e.message)}
+  }
+
   async function submitAnswer(){
     if(!answer.trim()||!room?.turn?.isMyTurn)return;
     try{
@@ -90,11 +99,11 @@ export default function JoinRoom(){
         {playing&&room?.phase==="question"&&mine&&<div className="student-question-card">
           <div className="student-turn-badge">התור שלך</div>
           <h1>{room?.turn?.question}</h1>
-          <div className="letter-boxes words" dir="rtl">{(room?.turn?.answerPattern||[]).map((part,pi)=>part===" "?<i className="answer-word-space" key={pi}/>:<span className="answer-word" key={pi}>{Array.from({length:part}).map((_,i)=>{const before=(room.turn.answerPattern||[]).slice(0,pi).filter(x=>x!==" ").reduce((s,x)=>s+x,0);return <b key={i}>{answer.replace(/\s/g,"")[before+i]||""}</b>})}</span>)}</div>
+          <div className="letter-boxes words" dir="rtl">{(room?.turn?.answerPattern||[]).map((part,pi)=>part===" "?<i className="answer-word-space" key={pi}/>:<span className="answer-word" key={pi}>{Array.from({length:part}).map((_,i)=>{const before=(room.turn.answerPattern||[]).slice(0,pi).filter(x=>x!==" ").reduce((s,x)=>s+x,0);const pos=before+i, typed=answer.replace(/\s/g,"")[pos]||"", hinted=(room?.turn?.hintedLetters||[]).includes(pos); return <b className={hinted&&!typed?"hinted-letter":""} key={i}>{typed||(hinted?room?.turn?.answerChars?.[pos]:"")}</b>})}</span>)}</div>
           <input className="answer-hidden-input" value={answer} maxLength={room?.turn?.answerLength||80} autoFocus onChange={e=>{const v=e.target.value;setAnswer(v);setFeedback("");pushTyping(v)}} onKeyDown={e=>{if(e.key==="Enter")submitAnswer()}} placeholder="הקלידו את התשובה"/>
-          {showHint&&!hintMode&&<div className="hint-choices"><button onClick={()=>setHintMode("word")}>רמז מילולי</button><button onClick={()=>setHintMode("letter")}>חשיפת אות</button></div>}
+          {showHint&&!hintMode&&<div className="hint-choices"><button onClick={()=>setHintMode("word")}>רמז מילולי</button><button onClick={revealLetterHint}>חשיפת אות</button></div>}
           {showHint&&hintMode==="word"&&room?.turn?.hint&&<div className="student-hint">רמז: {room.turn.hint}</div>}
-          {showHint&&hintMode==="letter"&&<div className="student-hint">האות הראשונה: <b>{room?.turn?.firstLetter}</b></div>}
+          {showHint&&hintMode==="letter"&&<div className="student-hint">אות נחשפה בתוך ריבועי התשובה</div>}
           {feedback&&<div className="student-feedback">{feedback}</div>}
           <button className="next student-enter" disabled={!answer.trim()} onClick={submitAnswer}>שליחת תשובה</button>
         </div>}
