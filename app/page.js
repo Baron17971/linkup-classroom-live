@@ -46,7 +46,7 @@ export default function Home(){
   const letters=useMemo(()=>secret.replace(/[\s\-–—.,!?'"״׳:;()]/g,"").length,[secret]);
 
   useEffect(()=>{
-    setStudentLink(roomCode?window.location.origin+"/join/"+roomCode:"");
+    setStudentLink(roomCode?"https://linkup-classroom-live.vercel.app/join/"+roomCode:"");
   },[roomCode]);
 
   useEffect(()=>{
