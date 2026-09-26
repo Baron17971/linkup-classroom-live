@@ -10,6 +10,7 @@ const steps=[
 ];
 
 export default function Home(){
+  const [view,setView]=useState("home");
   const [step,setStep]=useState(1);
   const [topic,setTopic]=useState("");
   const [subject,setSubject]=useState("");
@@ -34,19 +35,40 @@ export default function Home(){
     requestAnimationFrame(()=>window.scrollTo({top:0,behavior:"smooth"}));
   }
 
+  function openTeacher(){
+    setView("teacher");
+    requestAnimationFrame(()=>window.scrollTo({top:0,behavior:"instant"}));
+  }
+
   let countMessage="";
   if(letters===count) countMessage="✓ התאמה מושלמת";
   else if(letters<count) countMessage="חסרות "+(count-letters)+" אותיות";
   else countMessage="יש "+(letters-count)+" אותיות מיותרות";
 
+  if(view==="home"){
+    return <main className="home-screen">
+      <picture className="home-picture">
+        <source media="(max-width:720px)" srcSet="/home-mobile.webp"/>
+        <img src="/home-desktop.webp" alt="LinkUp — כולנו חלק מהשרשרת" className="home-art"/>
+      </picture>
+      <button className="home-teacher-hotspot" onClick={openTeacher} aria-label="כניסת מורה">
+        <span className="sr-only">כניסת מורה</span>
+      </button>
+    </main>;
+  }
+
   return <main className="teacher-shell">
     <section className="teacher-card">
       <header className="brand-head">
-        <img src="/linkup-logo.webp" alt="LinkUp — כולנו חלק מהשרשרת" className="brand-logo"/>
+        <div className="brand-logo-wrap">
+          <img src="/linkup-logo.webp" alt="LinkUp — כולנו חלק מהשרשרת" className="brand-logo"/>
+          <button className="home-link" onClick={()=>setView("home")}>חזרה לדף הבית</button>
+        </div>
         <div className="brand-copy">
           <span>צד המורה</span>
           <h1>יצירת משחק חדש</h1>
           <p>בונים שרשרת ידע כיתתית שבה כל תלמיד פותח את החוליה הבאה.</p>
+          <div className="creator-credit">פותח ע"י ענת ברון־לוביש · כל הזכויות שמורות</div>
         </div>
       </header>
 
@@ -103,7 +125,7 @@ export default function Home(){
       {step===4&&<section className="panel">
         <div className="panel-title"><span>04</span><div><h2>עיצוב והפעלה</h2><p>בחרו את האווירה של מסך המשחק.</p></div></div>
         <div className="themes">
-          {["שרשרת זוהרת","שביל מסתורין","מפת אוצר","גלקסיית ידע","טבע וצמיחה","מעבדת מדע","מסע ישראלי","אבני דרך"].map(t=><button key={t} className={theme===t?"theme active": "theme"} onClick={()=>setTheme(t)}><span className="theme-dot"/><b>{t}</b></button>)}
+          {["שרשרת זוהרת","שביל מסתורין","מפת אוצר","גלקסיית ידע","טבע וצמיחה","מעבדת מדע","מסע ישראלי","אבני דרך"].map(t=><button key={t} className={theme===t?"theme active":"theme"} onClick={()=>setTheme(t)}><span className="theme-dot"/><b>{t}</b></button>)}
         </div>
         <div className="ready-card">
           <div><small>LinkUp</small><h3>{topic||"המשחק שלך כמעט מוכן"}</h3><p>{count} חוליות · {theme}</p></div>
