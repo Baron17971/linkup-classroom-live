@@ -56,22 +56,21 @@ button{cursor:pointer}
 }
 .brand-head{
   display:flex;
-  flex-direction:row;
+  flex-direction:column;
   align-items:center;
-  justify-content:flex-start;
-  gap:30px;
-  padding:26px 36px 22px;
+  justify-content:center;
+  gap:10px;
+  padding:20px 36px 24px;
   direction:rtl;
-  text-align:right;
-  background:linear-gradient(270deg,rgba(255,253,248,.98),rgba(232,248,245,.82));
+  text-align:center;
+  background:linear-gradient(180deg,rgba(232,248,245,.88),rgba(255,253,248,.98));
   border-bottom:1px solid rgba(34,143,150,.10);
 }
-.brand-logo-wrap{width:285px;max-width:38%;flex:0 0 auto;text-align:center}
-.brand-logo{display:block;width:100%;height:auto;object-fit:contain}
-.brand-copy{flex:1;min-width:0;text-align:right}
+.brand-logo{display:block;width:min(360px,72%);height:auto;object-fit:contain;margin:0 auto -2px}
+.brand-copy{width:100%;text-align:center}
 .brand-copy>span{display:inline-block;padding:6px 12px;border-radius:999px;background:#e5f7f4;color:var(--turq2);font-weight:800;font-size:13px}
 .brand-copy h1{margin:10px 0 6px;font-size:34px;line-height:1;color:#153f56}
-.brand-copy p{margin:0;color:var(--muted);font-size:15px}
+.brand-copy p{margin:0 auto;color:var(--muted);font-size:15px;max-width:620px}
 .progress{
   display:grid;
   grid-template-columns:repeat(4,1fr);
@@ -109,8 +108,13 @@ textarea{min-height:110px;resize:vertical}
 .ai-box{padding:18px;border:1px solid #cce8e3;border-radius:20px;background:linear-gradient(135deg,#eaf9f6,#fff7e8);direction:rtl;text-align:right}
 .ai-box h3{margin:0 0 4px}.ai-box p{margin:0 0 12px;color:#648187}
 .prompt{min-height:150px;background:white}
+.secret-ai{margin-bottom:22px}
+.secret-prompt{min-height:125px}
 .soft{border:0;border-radius:12px;background:#d8f3ef;color:#0e7f84;padding:11px 16px;font-weight:900}
 .bank{min-height:220px}
+.bank-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px}
+.load-bank{border:0;border-radius:14px;padding:13px 22px;background:linear-gradient(180deg,#29c4bd,#118e94);color:#fff;font-weight:900;box-shadow:0 8px 18px rgba(17,140,147,.18)}
+.bank-loaded{margin-top:10px;padding:10px 13px;border-radius:12px;background:#e8f8f2;color:#128162;font-weight:800}
 .bank-note{display:flex;flex-direction:row;align-items:baseline;justify-content:flex-start;gap:8px;color:#7c9296;text-align:right}
 .bank-note b{font-size:24px;color:#0e8a8f}
 .secret{min-height:90px;font-size:20px;text-align:right}
@@ -137,9 +141,12 @@ textarea{min-height:110px;resize:vertical}
   .home-teacher-hotspot{left:19%;top:53.5%;width:62%;height:11%}
   .teacher-shell{padding:0}
   .teacher-card{border-radius:0;min-height:100vh}
-  .brand-head{padding:18px 18px 16px;gap:14px;align-items:flex-start}
-  .brand-logo-wrap{width:180px;max-width:44%}
-  .brand-copy h1{font-size:24px}.brand-copy p{font-size:13px;line-height:1.45}
+  .brand-head{padding:16px 18px 18px;gap:8px;align-items:center}
+  .brand-logo{width:min(300px,78%);margin:0 auto -2px}
+  .brand-copy{text-align:center}
+  .brand-copy h1{font-size:26px}.brand-copy p{font-size:13px;line-height:1.45}
+  .bank-actions{align-items:center}
+  .load-bank{padding:12px 18px}
   .home-credit{bottom:10px;font-size:10px;padding:6px 10px}
   .progress{padding:15px 8px}.progress button span{display:none}.progress button:not(:last-child):after{inset-inline-start:61%;width:78%}
   .panel{padding:26px 18px 10px}.panel-title h2{font-size:25px}
