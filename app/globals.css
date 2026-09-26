@@ -370,8 +370,8 @@ textarea{min-height:110px;resize:vertical}
 }
 .preview-logo{position:absolute;top:3.5%;width:min(260px,24vw);height:auto}
 .preview-topic{
-  margin-top:4vh;
-  margin-bottom:18px;
+  margin-top:1vh;
+  margin-bottom:8px;
   padding:7px 16px;
   border-radius:999px;
   background:rgba(255,253,248,.78);
@@ -500,12 +500,12 @@ textarea{min-height:110px;resize:vertical}
   .preview-topbar .next{grid-column:1;grid-row:2}
   .projector-preview{min-height:calc(100vh - 126px)}
   .preview-logo{width:min(260px,58vw);top:4%}
-  .preview-overlay{padding:12vh 7vw 7vh}
-  .preview-topic{margin-top:7vh}
+  .preview-overlay{padding:9vh 7vw 7vh}
+  .preview-topic{margin-top:2vh;margin-bottom:4px}
   .preview-secret{
     width:80vw;
-    min-height:40vh;
-    padding:22px 12px;
+    min-height:34vh;
+    padding:8px 12px 20px;
     column-gap:18px;
     row-gap:18px;
   }
@@ -560,4 +560,8 @@ textarea{min-height:110px;resize:vertical}
   background:#dff6ef;
   color:#108b75;
   font-size:30px;font-weight:900;
+}
+
+@media(max-width:720px){
+  .preview-secret{align-content:flex-start;padding-top:6px}
 }
