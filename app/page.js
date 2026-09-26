@@ -1,6 +1,7 @@
 "use client";
 
-import {useMemo,useState} from "react";
+import {useEffect,useMemo,useState} from "react";
+import {QRCodeSVG} from "qrcode.react";
 
 const steps=[
   {n:1,label:"פרטי המשחק"},
@@ -23,8 +24,14 @@ export default function Home(){
   const [secret,setSecret]=useState("");
   const [theme,setTheme]=useState("שרשרת זוהרת");
   const [roomCode]=useState("483921");
+  const [studentLink,setStudentLink]=useState("");
+  const [copied,setCopied]=useState(false);
 
   const letters=useMemo(()=>secret.replace(/[\s\-–—.,!?'"״׳:;()]/g,"").length,[secret]);
+
+  useEffect(()=>{
+    setStudentLink(window.location.origin+"/join/"+roomCode);
+  },[roomCode]);
 
   const aiPrompt=useMemo(()=>`אני מורה ל${subject||"[מקצוע]"} ומלמד/ת תלמידי כיתה ${grade||"[כיתה]"} את הנושא: ${topic||"[נושא]"}.
 צור ${count} שאלות קצרות למשחק כיתתי.
@@ -89,6 +96,33 @@ export default function Home(){
   else if(letters<count) countMessage="חסרות "+(count-letters)+" אותיות";
   else countMessage="יש "+(letters-count)+" אותיות מיותרות";
 
+  if(view==="preview"){
+    const hiddenSentence=secret
+      ? secret.split("").map((ch,i)=>ch===" "?<i key={i} className="preview-space"/>:<span key={i}>{/[א-ת]/.test(ch)?"•":ch}</span>)
+      : <small>משפט המסתורין יוצג כאן</small>;
+
+    return <main className="preview-shell">
+      <section className="preview-topbar">
+        <button className="back" onClick={()=>{setView("teacher");setStep(4)}}>חזרה לעיצוב</button>
+        <div><b>תצוגה מקדימה</b><span>כך ייראה מסך המשחק על המקרן</span></div>
+        <button className="next" onClick={()=>setView("lobby")}>המשך ללובי</button>
+      </section>
+
+      <section className="projector-preview">
+        <picture className="preview-picture">
+          <source media="(max-width:720px)" srcSet="/chain-bg.png"/>
+          <img src="/chain-bg-desktop.png" alt="" className="preview-bg"/>
+        </picture>
+        <div className="preview-overlay">
+          <img src="/LinkUp-logo.png" alt="LinkUp" className="preview-logo"/>
+          <div className="preview-topic">{topic||"נושא המשחק"}</div>
+          <div className="preview-secret" dir="rtl">{hiddenSentence}</div>
+          <div className="preview-progress"><b>0</b><span>מתוך {count} חוליות</span></div>
+        </div>
+      </section>
+    </main>;
+  }
+
   if(view==="lobby"){
     return <main className="lobby-shell">
       <section className="lobby-card">
@@ -97,10 +131,25 @@ export default function Home(){
         <h1>{topic||"LinkUp"}</h1>
         <p className="lobby-sub">המשחק מוכן. עכשיו אפשר לחבר את התלמידים.</p>
 
-        <div className="room-code-box">
-          <span>קוד הכיתה</span>
-          <strong>{roomCode}</strong>
-          <small>התלמידים יקלידו את הקוד במסך הכניסה</small>
+        <div className="join-share-grid">
+          <div className="qr-card">
+            <span>סרקו כדי להצטרף</span>
+            <div className="qr-wrap">{studentLink&&<QRCodeSVG value={studentLink} size={188} bgColor="#ffffff" fgColor="#123f52" level="M"/>}</div>
+          </div>
+
+          <div className="room-code-box">
+            <span>קוד הכיתה</span>
+            <strong>{roomCode}</strong>
+            <small>אפשר לסרוק את הברקוד או להיכנס דרך הקישור</small>
+          </div>
+        </div>
+
+        <div className="student-link-box">
+          <span>קישור לתלמידים</span>
+          <div className="student-link-row">
+            <input readOnly value={studentLink}/>
+            <button className="copy-link" onClick={async()=>{await navigator.clipboard.writeText(studentLink);setCopied(true);setTimeout(()=>setCopied(false),1800)}}>{copied?"הועתק ✓":"העתקת קישור"}</button>
+          </div>
         </div>
 
         <div className="lobby-stats">
@@ -236,17 +285,14 @@ export default function Home(){
         <div className="themes">
           {["שרשרת זוהרת","שביל מסתורין","מפת אוצר","גלקסיית ידע","טבע וצמיחה","מעבדת מדע","מסע ישראלי","אבני דרך"].map(t=><button key={t} className={theme===t?"theme active":"theme"} onClick={()=>setTheme(t)}><span className="theme-dot"/><b>{t}</b></button>)}
         </div>
-        <div className="ready-card">
-          <div><small>LinkUp</small><h3>{topic||"המשחק שלך כמעט מוכן"}</h3><p>{count} חוליות · {theme}</p></div>
-          <button className="launch" onClick={()=>setView("lobby")}>פתיחת לובי המשחק</button>
-        </div>
+        <div className="theme-selection-note">העיצוב שבחרתם יוצג במסך המקרן. בשלב הבא תוכלו לראות תצוגה מקדימה מלאה.</div>
       </section>}
 
       <footer className="wizard-nav">
         {step>1?<button className="back" onClick={()=>go(step-1)}>חזרה</button>:<span/>}
         {step<4
           ? <button className="next" onClick={()=>go(step+1)}>המשך</button>
-          : <button className="next final-next" onClick={()=>setView("lobby")}>פתיחת לובי המשחק</button>}
+          : <button className="next final-next" onClick={()=>setView("preview")}>תצוגה מקדימה</button>}
       </footer>
     </section>
   </main>;
