@@ -14,6 +14,7 @@ export default function JoinRoom(){
   const [answer,setAnswer]=useState("");
   const [feedback,setFeedback]=useState("");
   const [showHint,setShowHint]=useState(false);
+  const [hintMode,setHintMode]=useState("");
 
   useEffect(()=>{
     const saved=localStorage.getItem("linkupPid:"+code);
@@ -58,6 +59,10 @@ export default function JoinRoom(){
     finally{setJoining(false)}
   }
 
+  async function pushTyping(value){
+    try{await fetch("/api/game",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"typing",code,participantId,answer:value})})}catch{}
+  }
+
   async function submitAnswer(){
     if(!answer.trim()||!room?.turn?.isMyTurn)return;
     try{
@@ -81,8 +86,11 @@ export default function JoinRoom(){
         {playing&&mine&&<div className="student-question-card">
           <div className="student-turn-badge">התור שלך</div>
           <h1>{room?.turn?.question}</h1>
-          <input value={answer} onChange={e=>{setAnswer(e.target.value);setFeedback("")}} onKeyDown={e=>{if(e.key==="Enter")submitAnswer()}} placeholder="הקלידו תשובה"/>
-          {showHint&&room?.turn?.hint&&<div className="student-hint">רמז: {room.turn.hint}</div>}
+          <div className="letter-boxes" dir="rtl">{Array.from({length:room?.turn?.answerLength||0}).map((_,i)=><span key={i}>{answer.replace(/\s/g,"")[i]||""}</span>)}</div>
+          <input className="answer-hidden-input" value={answer} maxLength={room?.turn?.answerLength||80} autoFocus onChange={e=>{const v=e.target.value;setAnswer(v);setFeedback("");pushTyping(v)}} onKeyDown={e=>{if(e.key==="Enter")submitAnswer()}} placeholder="הקלידו את התשובה"/>
+          {showHint&&!hintMode&&<div className="hint-choices"><button onClick={()=>setHintMode("word")}>רמז מילולי</button><button onClick={()=>setHintMode("letter")}>חשיפת אות</button></div>}
+          {showHint&&hintMode==="word"&&room?.turn?.hint&&<div className="student-hint">רמז: {room.turn.hint}</div>}
+          {showHint&&hintMode==="letter"&&<div className="student-hint">האות הראשונה: <b>{room?.turn?.firstLetter}</b></div>}
           {feedback&&<div className="student-feedback">{feedback}</div>}
           <button className="next student-enter" disabled={!answer.trim()} onClick={submitAnswer}>שליחת תשובה</button>
         </div>}
