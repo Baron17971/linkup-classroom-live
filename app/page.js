@@ -58,6 +58,11 @@ export default function Home(){
       .filter(Boolean);
     setItems(parsed);
     setBankLoaded(parsed.length>0);
+    if(parsed.length>0){
+      setTimeout(()=>{
+        document.getElementById("items-editor")?.scrollIntoView({behavior:"smooth",block:"start"});
+      },120);
+    }
   }
 
   function updateItem(id,key,value){
@@ -145,8 +150,8 @@ export default function Home(){
           <div className="bank-note"><b>{bank.split(/\r?\n/).filter(Boolean).length}</b><span>שורות במאגר</span></div>
         </div>
         {bankLoaded&&<>
-          <div className="bank-loaded">✓ המאגר נטען בהצלחה · ניתן לערוך את כל הפריטים לפני המשך</div>
-          <div className="items-editor">
+          <div className="bank-loaded">✓ המאגר נטען בהצלחה · נפתח אזור עריכת הפריטים</div>
+          <div className="items-editor" id="items-editor">
             <div className="items-editor-head">
               <div>
                 <h3>עריכת הפריטים</h3>
