@@ -181,6 +181,11 @@ export default function Home(){
       <div className="preview-overlay">
         <img src="/linkup-logo2.png" alt="LinkUp" className="preview-logo"/>
         <div className="preview-topic">{topic}</div>
+        {lobbyRoom?.status==="playing"&&<div className="projector-question-panel">
+          <small>השאלה של {lobbyRoom?.currentPlayerName||""}</small>
+          <h2>{lobbyRoom?.currentQuestion||""}</h2>
+          <div className="projector-live-answer" dir="rtl">{lobbyRoom?.liveAnswer||"ממתינים לתשובה…"}</div>
+        </div>}
         <div className="preview-secret projector-secret" dir="rtl">{chars.map((ch,i)=>{
           if(!/[א-ת]/.test(ch))return ch===" "?<span className="projector-space" key={i}/>:<span className="preview-punctuation" key={i}>{ch}</span>;
           const n=li++; return <span className="preview-letter" key={i}>{n<progress?ch:"•"}</span>
