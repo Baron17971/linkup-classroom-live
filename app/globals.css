@@ -649,3 +649,18 @@ textarea{min-height:110px;resize:vertical}
 .projector-question-panel{width:min(72vw,920px);padding:16px 22px;margin:8px 0 12px;border-radius:22px;background:rgba(255,253,248,.9);box-shadow:0 12px 34px rgba(22,72,82,.1)}
 .projector-question-panel small{color:#628088;font-weight:800}.projector-question-panel h2{margin:6px 0 10px;color:#153f52;font-size:clamp(20px,2.3vw,34px)}
 .projector-live-answer{min-height:38px;padding:8px 14px;border-radius:12px;background:#e7f7f4;color:#10878b;font-size:clamp(18px,2vw,28px);font-weight:900}
+
+.answer-word,.projector-answer-word{display:inline-flex;gap:6px;direction:rtl}
+.answer-word b,.projector-answer-word b{width:42px;height:48px;border:2px solid #9edbd5;border-radius:10px;background:#fff;display:grid;place-items:center;font-size:24px;color:#174c5c}
+.answer-word-space,.projector-answer-boxes>i{width:22px}
+.letter-boxes.words,.projector-answer-boxes{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:10px}
+.projector-answer-boxes{margin-top:10px}
+.projector-wrong{margin-top:10px;color:#a34c42;font-weight:900;font-size:20px}
+.projector-correct,.projector-transition{z-index:4;margin:8px;padding:14px 22px;border-radius:18px;background:rgba(232,248,242,.96);color:#117f72;font-size:24px;font-weight:900}
+.projector-transition button{margin-inline-start:18px;border:0;border-radius:12px;padding:9px 14px;background:#163f53;color:#fff;font-weight:900}
+.teacher-live-controls{display:flex;flex-wrap:wrap;gap:7px;justify-content:center}
+.teacher-live-controls button{border:1px solid #cfe2de;border-radius:12px;padding:10px 12px;background:#fff;color:#285e67;font-weight:800}
+.projector-finale{position:absolute;inset:0;z-index:10;display:grid;place-content:center;text-align:center;padding:8vw;background:rgba(255,253,248,.94)}
+.projector-finale h1{font-size:clamp(38px,6vw,78px);margin:10px;color:#14566a}
+.projector-finale p{font-size:clamp(25px,4vw,52px);font-weight:900;color:#118b83}
+.projector-finale small{font-size:20px;color:#6a858a}.finale-chain{font-size:54px}
