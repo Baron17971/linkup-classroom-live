@@ -43,6 +43,23 @@ export default function Home(){
   const [roomError,setRoomError]=useState("");
   const [lobbyRoom,setLobbyRoom]=useState(null);
   const [projector,setProjector]=useState(false);
+  const [rewardStage,setRewardStage]=useState(0);
+
+  useEffect(()=>{
+    if(!projector||lobbyRoom?.phase!=="correct"){setRewardStage(0);return}
+    setRewardStage(1);
+    const audio=()=>{try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;const ctx=new C(),o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.setValueAtTime(660,ctx.currentTime);o.frequency.exponentialRampToValueAtTime(880,ctx.currentTime+.16);g.gain.setValueAtTime(.0001,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.10,ctx.currentTime+.02);g.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+.32);o.start();o.stop(ctx.currentTime+.34)}catch{}};
+    const t1=setTimeout(()=>{setRewardStage(2);audio()},650);
+    const t2=setTimeout(()=>setRewardStage(3),1350);
+    const t3=setTimeout(()=>teacherAction("advance"),2400);
+    return()=>{clearTimeout(t1);clearTimeout(t2);clearTimeout(t3)}
+  },[projector,lobbyRoom?.phase]);
+
+  useEffect(()=>{
+    if(!projector||lobbyRoom?.phase!=="transition")return;
+    const t=setTimeout(()=>teacherAction("advance"),2500);
+    return()=>clearTimeout(t);
+  },[projector,lobbyRoom?.phase]);
 
   const letters=useMemo(()=>secret.replace(/[\s\-–—.,!?'"״׳:;()]/g,"").length,[secret]);
 
@@ -195,8 +212,12 @@ export default function Home(){
           <div className="projector-answer-boxes" dir="rtl">{(lobbyRoom?.currentAnswer||"").split(/(\s+)/).map((part,pi)=>/^\s+$/.test(part)?<i key={pi}/>:<span className="projector-answer-word" key={pi}>{part.split("").map((_,i)=>{const before=(lobbyRoom.currentAnswer||"").split(/(\s+)/).slice(0,pi).filter(x=>!/^\s+$/.test(x)).join("").length;return <b key={i}>{(lobbyRoom?.liveAnswer||"").replace(/\s/g,"")[before+i]||""}</b>})}</span>)}</div>
           {lobbyRoom?.feedback==="wrong"&&<div className="projector-wrong">לא נכון — נסו שוב</div>}
         </div>}
-{lobbyRoom?.phase==="correct"&&<div className="projector-correct">✓ נכון! <b>{lobbyRoom?.lastAnswer}</b><button onClick={()=>teacherAction("advance")}>פתיחת החוליה</button></div>}
-        {lobbyRoom?.phase==="transition"&&<div className="projector-transition">⛓ החוליה נפתחה! הבא/ה בתור: <b>{lobbyRoom?.nextPlayerName}</b><button onClick={()=>teacherAction("advance")}>לשאלה הבאה</button></div>}
+{lobbyRoom?.phase==="correct"&&<div className={"reward-overlay stage-"+rewardStage}>
+          <div className="reward-dim"/>
+          <div className="chain-reward" aria-hidden="true"><span className="chain-link link-a"/><span className="chain-spark">✦</span><span className="chain-link link-b"/></div>
+          <div className="reward-copy"><b>נכון!</b><strong>{lobbyRoom?.lastAnswer}</strong><h2>החוליה נפתחה!</h2></div>
+        </div>}
+        {lobbyRoom?.phase==="transition"&&<div className="projector-transition auto-transition">החוליה נפתחה! <span>הבא/ה בתור: <b>{lobbyRoom?.nextPlayerName}</b></span><div className="transition-countdown"><i>3</i><i>2</i><i>1</i></div></div>}
         <div className="preview-secret projector-secret" dir="rtl">{secret.trim().split(/\s+/).map((word,wi)=><span className="preview-word" key={wi}>{word.split("").map((ch,ci)=>{
           if(!/[א-ת]/.test(ch))return <span className="preview-punctuation" key={ci}>{ch}</span>;
           const n=li++; return <span className="preview-letter" key={ci}>{(lobbyRoom?.revealedLetters||[]).includes(n)?ch:"•"}</span>
