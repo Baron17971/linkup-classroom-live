@@ -22,6 +22,7 @@ export default function Home(){
   const [items,setItems]=useState([]);
   const [secret,setSecret]=useState("");
   const [theme,setTheme]=useState("שרשרת זוהרת");
+  const [roomCode]=useState("483921");
 
   const letters=useMemo(()=>secret.replace(/[\s\-–—.,!?'"״׳:;()]/g,"").length,[secret]);
 
@@ -87,6 +88,36 @@ export default function Home(){
   if(letters===count) countMessage="✓ התאמה מושלמת";
   else if(letters<count) countMessage="חסרות "+(count-letters)+" אותיות";
   else countMessage="יש "+(letters-count)+" אותיות מיותרות";
+
+  if(view==="lobby"){
+    return <main className="lobby-shell">
+      <section className="lobby-card">
+        <img src="/LinkUp-logo.png" alt="LinkUp" className="lobby-logo"/>
+        <div className="lobby-kicker">לובי המשחק</div>
+        <h1>{topic||"LinkUp"}</h1>
+        <p className="lobby-sub">המשחק מוכן. עכשיו אפשר לחבר את התלמידים.</p>
+
+        <div className="room-code-box">
+          <span>קוד הכיתה</span>
+          <strong>{roomCode}</strong>
+          <small>התלמידים יקלידו את הקוד במסך הכניסה</small>
+        </div>
+
+        <div className="lobby-stats">
+          <div><b>0</b><span>תלמידים מחוברים</span></div>
+          <div><b>{count}</b><span>חוליות בשרשרת</span></div>
+          <div><b>{items.length||count}</b><span>שאלות במאגר</span></div>
+        </div>
+
+        <div className="lobby-wait">ממתינים לתלמידים…</div>
+
+        <div className="lobby-actions">
+          <button className="back" onClick={()=>{setView("teacher");setStep(4)}}>חזרה לעריכה</button>
+          <button className="next" disabled>התחל משחק</button>
+        </div>
+      </section>
+    </main>;
+  }
 
   if(view==="home"){
     return <main className="home-screen">
@@ -207,13 +238,15 @@ export default function Home(){
         </div>
         <div className="ready-card">
           <div><small>LinkUp</small><h3>{topic||"המשחק שלך כמעט מוכן"}</h3><p>{count} חוליות · {theme}</p></div>
-          <button className="launch">פתיחת לובי המשחק</button>
+          <button className="launch" onClick={()=>setView("lobby")}>פתיחת לובי המשחק</button>
         </div>
       </section>}
 
       <footer className="wizard-nav">
         {step>1?<button className="back" onClick={()=>go(step-1)}>חזרה</button>:<span/>}
-        {step<4&&<button className="next" onClick={()=>go(step+1)}>המשך</button>}
+        {step<4
+          ? <button className="next" onClick={()=>go(step+1)}>המשך</button>
+          : <button className="next final-next" onClick={()=>setView("lobby")}>פתיחת לובי המשחק</button>}
       </footer>
     </section>
   </main>;
