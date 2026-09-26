@@ -54,6 +54,7 @@ export default function Home(){
       <button className="home-teacher-hotspot" onClick={openTeacher} aria-label="כניסת מורה">
         <span className="sr-only">כניסת מורה</span>
       </button>
+      <div className="home-credit">פותח ע"י ענת ברון־לוביש · כל הזכויות שמורות</div>
     </main>;
   }
 
@@ -62,13 +63,11 @@ export default function Home(){
       <header className="brand-head">
         <div className="brand-logo-wrap">
           <img src="/LinkUp-logo.png" alt="LinkUp — כולנו חלק מהשרשרת" className="brand-logo"/>
-          <button className="home-link" onClick={()=>setView("home")}>חזרה לדף הבית</button>
         </div>
         <div className="brand-copy">
           <span>צד המורה</span>
           <h1>יצירת משחק חדש</h1>
           <p>בונים שרשרת ידע כיתתית שבה כל תלמיד פותח את החוליה הבאה.</p>
-          <div className="creator-credit">פותח ע"י ענת ברון־לוביש · כל הזכויות שמורות</div>
         </div>
       </header>
 
