@@ -11,6 +11,9 @@ export default function JoinRoom(){
   const [room,setRoom]=useState(null);
   const [joining,setJoining]=useState(false);
   const [error,setError]=useState("");
+  const [answer,setAnswer]=useState("");
+  const [feedback,setFeedback]=useState("");
+  const [showHint,setShowHint]=useState(false);
 
   useEffect(()=>{
     const saved=localStorage.getItem("linkupPid:"+code);
@@ -55,13 +58,35 @@ export default function JoinRoom(){
     finally{setJoining(false)}
   }
 
+  async function submitAnswer(){
+    if(!answer.trim()||!room?.turn?.isMyTurn)return;
+    try{
+      const r=await fetch("/api/game",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"answer",code,participantId,answer})});
+      const d=await r.json();
+      if(!r.ok)throw new Error(d.error||"שגיאה");
+      if(d.correct){setFeedback("נכון! החוליה נפתחה ✓");setAnswer("");setShowHint(false)}
+      else {setFeedback("עוד ניסיון — אפשר להיעזר ברמז");setShowHint(true)}
+    }catch(e){setError(e.message)}
+  }
+
   if(participantId){
+    const playing=room?.status==="playing";
+    const finished=room?.status==="finished";
+    const mine=room?.turn?.isMyTurn;
     return <main className="student-join-shell">
       <section className="student-join-card waiting-card">
         <img src="/linkup-logo2.png" alt="LinkUp" className="student-join-logo"/>
-        <div className="waiting-dot">✓</div>
-        <h1>{room?.status==="playing"?"המשחק מתחיל!":"התחברת למשחק"}</h1>
-        <p><b>{room?.participant?.name||name}</b>, {room?.status==="playing"?"המורה התחיל את השרשרת.":"מחכים שהמורה יתחיל את השרשרת."}</p>
+        {!playing&&!finished&&<><div className="waiting-dot">✓</div><h1>התחברת למשחק</h1><p><b>{room?.participant?.name||name}</b>, מחכים שהמורה יתחיל את השרשרת.</p></>}
+        {playing&&!mine&&<><div className="waiting-dot">⛓</div><h1>השרשרת בתנועה</h1><p><b>{room?.participant?.name||name}</b>, ממתינים לתורך. כרגע משחק/ת: <b>{room?.turn?.participantName||""}</b></p><div className="student-chain-progress">{room?.progress||0} מתוך {room?.count||0} חוליות</div></>}
+        {playing&&mine&&<div className="student-question-card">
+          <div className="student-turn-badge">התור שלך</div>
+          <h1>{room?.turn?.question}</h1>
+          <input value={answer} onChange={e=>{setAnswer(e.target.value);setFeedback("")}} onKeyDown={e=>{if(e.key==="Enter")submitAnswer()}} placeholder="הקלידו תשובה"/>
+          {showHint&&room?.turn?.hint&&<div className="student-hint">רמז: {room.turn.hint}</div>}
+          {feedback&&<div className="student-feedback">{feedback}</div>}
+          <button className="next student-enter" disabled={!answer.trim()} onClick={submitAnswer}>שליחת תשובה</button>
+        </div>}
+        {finished&&<><div className="waiting-dot">✓</div><h1>השלמתם את השרשרת!</h1><p>{room?.secret}</p></>}
         <small>קוד כיתה: {code}</small>
         {error&&<div className="room-error">{error}</div>}
       </section>
