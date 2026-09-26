@@ -12,7 +12,7 @@ export default function JoinRoom(){
   if(joined){
     return <main className="student-join-shell">
       <section className="student-join-card waiting-card">
-        <img src="/LinkUp-logo.png" alt="LinkUp" className="student-join-logo"/>
+        <img src="/linkup-logo2.png" alt="LinkUp" className="student-join-logo"/>
         <div className="waiting-dot">✓</div>
         <h1>התחברת למשחק</h1>
         <p><b>{name}</b>, מחכים שהמורה יתחיל את השרשרת.</p>
@@ -23,7 +23,7 @@ export default function JoinRoom(){
 
   return <main className="student-join-shell">
     <section className="student-join-card">
-      <img src="/LinkUp-logo.png" alt="LinkUp" className="student-join-logo"/>
+      <img src="/linkup-logo2.png" alt="LinkUp" className="student-join-logo"/>
       <div className="student-join-kicker">הצטרפות למשחק</div>
       <h1>ברוכים הבאים</h1>
       <p>קוד כיתה <b>{code}</b></p>
