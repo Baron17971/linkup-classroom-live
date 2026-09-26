@@ -214,7 +214,7 @@ export default function Home(){
         </div>}
 {lobbyRoom?.phase==="correct"&&<div className={"reward-overlay stage-"+rewardStage}>
           <div className="reward-dim"/>
-          <div className="chain-reward" aria-hidden="true"><span className="chain-link link-a"/><span className="chain-spark">✦</span><span className="chain-link link-b"/></div>
+          <div className="chain-reward chain-reward-image" aria-hidden="true"><img src="/gold-chain.png" alt=""/><span className="chain-spark">✦</span></div>
           <div className="reward-copy"><b>נכון!</b><strong>{lobbyRoom?.lastAnswer}</strong><h2>החוליה נפתחה!</h2></div>
         </div>}
         {lobbyRoom?.phase==="transition"&&<div className="projector-transition auto-transition">החוליה נפתחה! <span>הבא/ה בתור: <b>{lobbyRoom?.nextPlayerName}</b></span><div className="transition-countdown"><i>3</i><i>2</i><i>1</i></div></div>}
