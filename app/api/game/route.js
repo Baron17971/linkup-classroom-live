@@ -81,7 +81,7 @@ export async function GET(req){
     const active=["playing","paused"].includes(room.status);
     const current=active&&players.length?players[(room.currentTurn||0)%players.length]:null;
     const item=active?(room.items||[])[room.progress||0]:null;
-    return Response.json({...publicRoom(room),participant:{id:p.id,name:p.name,joinedAt:p.joinedAt},turn:item&&current?{isMyTurn:current.id===p.id,participantName:current.name,question:current.id===p.id?item.question:null,hint:current.id===p.id?item.hint:null,answerLength:current.id===p.id?item.answer.replace(/\s/g,"").length:0,answerPattern:current.id===p.id?item.answer.split(/(\s+)/).map(x=>/^\s+$/.test(x)?" ":x.length):[],hintedLetters:current.id===p.id?(room.hintedLetters||[]):[]}:null});
+    return Response.json({...publicRoom(room),participant:{id:p.id,name:p.name,joinedAt:p.joinedAt},turn:item&&current?{isMyTurn:current.id===p.id,participantName:current.name,question:current.id===p.id?item.question:null,hint:current.id===p.id?item.hint:null,answerLength:current.id===p.id?item.answer.replace(/\s/g,"").length:0,answerPattern:current.id===p.id?item.answer.split(/(\s+)/).map(x=>/^\s+$/.test(x)?" ":x.length):[],answerChars:current.id===p.id?item.answer.replace(/\s/g,"").split(""):[],hintedLetters:current.id===p.id?(room.hintedLetters||[]):[]}:null});
   }
 
   return Response.json(publicRoom(room));
