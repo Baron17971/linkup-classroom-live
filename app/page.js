@@ -122,7 +122,7 @@ export default function Home(){
           <img src="/chain-bg-desktop.png" alt="" className="preview-bg"/>
         </picture>
         <div className="preview-overlay">
-          <img src="/LinkUp-logo.png" alt="LinkUp" className="preview-logo"/>
+          <img src="/linkup-logo2.png" alt="LinkUp" className="preview-logo"/>
           <div className="preview-topic">{topic||"נושא המשחק"}</div>
           <div className="preview-secret" dir="rtl">{hiddenSentence}</div>
           <div className="preview-progress"><b>0</b><span>מתוך {count} חוליות</span></div>
@@ -134,7 +134,7 @@ export default function Home(){
   if(view==="lobby"){
     return <main className="lobby-shell">
       <section className="lobby-card">
-        <img src="/LinkUp-logo.png" alt="LinkUp" className="lobby-logo"/>
+        <img src="/linkup-logo2.png" alt="LinkUp" className="lobby-logo"/>
         <div className="lobby-kicker">לובי המשחק</div>
         <h1>{topic||"LinkUp"}</h1>
         <p className="lobby-sub">המשחק מוכן. עכשיו אפשר לחבר את התלמידים.</p>
@@ -192,7 +192,7 @@ export default function Home(){
   return <main className="teacher-shell">
     <section className="teacher-card">
       <header className="brand-head">
-        <img src="/LinkUp-logo.png" alt="LinkUp — כולנו חלק מהשרשרת" className="brand-logo"/>
+        <img src="/linkup-logo2.png" alt="LinkUp — כולנו חלק מהשרשרת" className="brand-logo"/>
         <div className="brand-copy">
           <span>צד המורה</span>
           <h1>יצירת משחק חדש</h1>
