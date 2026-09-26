@@ -48,8 +48,8 @@ export default function Home(){
   if(view==="home"){
     return <main className="home-screen">
       <picture className="home-picture">
-        <source media="(max-width:720px)" srcSet="/home-mobile.webp"/>
-        <img src="/home-desktop.webp" alt="LinkUp — כולנו חלק מהשרשרת" className="home-art"/>
+        <source media="(max-width:720px)" srcSet="/home-mobile.png.png"/>
+        <img src="/home-desktop.png.png" alt="LinkUp — כולנו חלק מהשרשרת" className="home-art"/>
       </picture>
       <button className="home-teacher-hotspot" onClick={openTeacher} aria-label="כניסת מורה">
         <span className="sr-only">כניסת מורה</span>
@@ -61,7 +61,7 @@ export default function Home(){
     <section className="teacher-card">
       <header className="brand-head">
         <div className="brand-logo-wrap">
-          <img src="/linkup-logo.webp" alt="LinkUp — כולנו חלק מהשרשרת" className="brand-logo"/>
+          <img src="/LinkUp-logo.png" alt="LinkUp — כולנו חלק מהשרשרת" className="brand-logo"/>
           <button className="home-link" onClick={()=>setView("home")}>חזרה לדף הבית</button>
         </div>
         <div className="brand-copy">
