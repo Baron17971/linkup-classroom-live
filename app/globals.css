@@ -664,3 +664,29 @@ textarea{min-height:110px;resize:vertical}
 .projector-finale h1{font-size:clamp(38px,6vw,78px);margin:10px;color:#14566a}
 .projector-finale p{font-size:clamp(25px,4vw,52px);font-weight:900;color:#118b83}
 .projector-finale small{font-size:20px;color:#6a858a}.finale-chain{font-size:54px}
+
+.reward-overlay{position:absolute;inset:0;z-index:9;display:grid;place-items:center;pointer-events:none;overflow:hidden}
+.reward-dim{position:absolute;inset:0;background:rgba(9,37,46,.32);backdrop-filter:blur(2px);animation:rewardDim .3s ease both}
+.chain-reward{position:relative;width:330px;height:150px;z-index:2}
+.chain-link{position:absolute;top:32px;width:132px;height:76px;border:13px solid #d9ad4a;border-radius:50%;box-shadow:0 0 0 3px rgba(255,244,190,.5) inset,0 8px 25px rgba(78,54,12,.3),0 0 24px rgba(244,199,91,.25)}
+.link-a{left:34px;transform:rotate(28deg) translateX(-110px);animation:linkA .7s cubic-bezier(.2,.8,.2,1) forwards}
+.link-b{right:34px;transform:rotate(-28deg) translateX(110px);animation:linkB .7s cubic-bezier(.2,.8,.2,1) forwards}
+.chain-spark{position:absolute;left:153px;top:50px;font-size:38px;color:#fff1a8;opacity:0;filter:drop-shadow(0 0 12px #ffe48a)}
+.stage-2 .chain-spark,.stage-3 .chain-spark{animation:spark .5s ease forwards}
+.reward-copy{z-index:3;margin-top:210px;text-align:center;color:white;text-shadow:0 2px 12px rgba(0,0,0,.25)}
+.reward-copy b{display:block;font-size:clamp(34px,5vw,64px);opacity:0;animation:rewardText .35s .15s ease forwards}
+.reward-copy strong{display:block;font-size:clamp(20px,2.4vw,32px);margin-top:4px;opacity:0;animation:rewardText .35s .3s ease forwards}
+.reward-copy h2{font-size:clamp(28px,4vw,48px);margin:12px 0 0;color:#fff0ad;opacity:0}
+.stage-2 .reward-copy h2,.stage-3 .reward-copy h2{animation:rewardText .35s ease forwards}
+.auto-transition{display:flex;flex-direction:column;align-items:center;gap:8px;animation:rewardText .35s ease}
+.auto-transition span{font-size:20px}
+.transition-countdown{display:flex;gap:12px;height:34px}
+.transition-countdown i{font-style:normal;font-weight:900;font-size:28px;opacity:0}
+.transition-countdown i:nth-child(1){animation:countPop .45s .15s ease forwards}.transition-countdown i:nth-child(2){animation:countPop .45s .85s ease forwards}.transition-countdown i:nth-child(3){animation:countPop .45s 1.55s ease forwards}
+.hinted-letter{background:#fff3bd!important;border-color:#d9ad4a!important;color:#8b6517!important}
+@keyframes rewardDim{from{opacity:0}to{opacity:1}}
+@keyframes linkA{to{transform:rotate(28deg) translateX(0)}}@keyframes linkB{to{transform:rotate(-28deg) translateX(0)}}
+@keyframes spark{0%{opacity:0;transform:scale(.3) rotate(0)}45%{opacity:1;transform:scale(1.6) rotate(35deg)}100%{opacity:.75;transform:scale(1) rotate(70deg)}}
+@keyframes rewardText{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes countPop{0%{opacity:0;transform:scale(.5)}45%{opacity:1;transform:scale(1.25)}100%{opacity:.9;transform:scale(1)}}
+@media(max-width:720px){.chain-reward{transform:scale(.78)}.reward-copy{margin-top:180px}}
