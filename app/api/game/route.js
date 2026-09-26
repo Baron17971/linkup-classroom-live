@@ -39,7 +39,8 @@ function publicRoom(room){
     status:room.status,
     participantCount:Object.keys(room.participants||{}).length,
     questionCount:room.items?.length||0,
-    version:room.version||0
+    version:room.version||0,
+    progress:room.progress||0
   };
 }
 
@@ -63,7 +64,10 @@ export async function GET(req){
     const pid=u.searchParams.get("participantId");
     const p=room.participants?.[pid];
     if(!p)return Response.json({error:"student_not_found"},{status:404});
-    return Response.json({...publicRoom(room),participant:{id:p.id,name:p.name,joinedAt:p.joinedAt}});
+    const players=Object.values(room.participants||{}).sort((a,b)=>a.joinedAt-b.joinedAt);
+    const current=room.status==="playing"&&players.length?players[(room.currentTurn||0)%players.length]:null;
+    const item=room.status==="playing"?(room.items||[])[room.progress||0]:null;
+    return Response.json({...publicRoom(room),participant:{id:p.id,name:p.name,joinedAt:p.joinedAt},turn:item&&current?{isMyTurn:current.id===p.id,participantName:current.name,question:current.id===p.id?item.question:null,hint:current.id===p.id?item.hint:null}:null});
   }
 
   return Response.json(publicRoom(room));
@@ -93,7 +97,7 @@ export async function POST(req){
     const teacherToken=token();
     const room={
       code,teacherToken,topic,subject,grade,instructions,count,theme,secret,items,
-      status:"lobby",participants:{},version:0,createdAt:Date.now()
+      status:"lobby",participants:{},progress:0,currentTurn:0,version:0,createdAt:Date.now()
     };
     await save(room);
     return Response.json({code,teacherToken});
@@ -123,6 +127,26 @@ export async function POST(req){
       ...publicRoom(room),
       participants:Object.values(room.participants||{}).map(p=>({id:p.id,name:p.name,joinedAt:p.joinedAt}))
     });
+  }
+
+  if(action==="answer"){
+    const pid=clean(body.participantId,40);
+    const p=room.participants?.[pid];
+    if(!p)return Response.json({error:"student_not_found"},{status:404});
+    if(room.status!=="playing")return Response.json({error:"not_playing"},{status:409});
+    const players=Object.values(room.participants||{}).sort((a,b)=>a.joinedAt-b.joinedAt);
+    const current=players[(room.currentTurn||0)%players.length];
+    if(!current||current.id!==pid)return Response.json({error:"not_your_turn"},{status:409});
+    const item=(room.items||[])[room.progress||0];
+    if(!item)return Response.json({error:"no_question"},{status:409});
+    const norm=v=>clean(v,120).toLocaleLowerCase("he-IL").replace(/[\s"'״׳.,!?;:()\-–—]/g,"");
+    const correct=norm(body.answer)===norm(item.answer);
+    if(!correct)return Response.json({correct:false,hint:item.hint});
+    room.progress=(room.progress||0)+1;
+    room.currentTurn=(room.currentTurn||0)+1;
+    if(room.progress>=Math.min(room.count,room.items.length))room.status="finished";
+    await save(room);
+    return Response.json({correct:true,progress:room.progress,status:room.status});
   }
 
   return Response.json({error:"action"},{status:400});
