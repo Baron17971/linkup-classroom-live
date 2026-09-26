@@ -189,19 +189,19 @@ export default function Home(){
       <div className="preview-overlay">
         <img src="/linkup-logo2.png" alt="LinkUp" className="preview-logo"/>
         <div className="preview-topic">{topic}</div>
-        {lobbyRoom?.status==="playing"&&<div className="projector-question-panel">
+        {["playing","paused"].includes(lobbyRoom?.status)&&lobbyRoom?.phase==="question"&&<div className="projector-question-panel">
           <small>השאלה של {lobbyRoom?.currentPlayerName||""}</small>
           <h2>{lobbyRoom?.currentQuestion||""}</h2>
           <div className="projector-answer-boxes" dir="rtl">{(lobbyRoom?.currentAnswer||"").split(/(\s+)/).map((part,pi)=>/^\s+$/.test(part)?<i key={pi}/>:<span className="projector-answer-word" key={pi}>{part.split("").map((_,i)=>{const before=(lobbyRoom.currentAnswer||"").split(/(\s+)/).slice(0,pi).filter(x=>!/^\s+$/.test(x)).join("").length;return <b key={i}>{(lobbyRoom?.liveAnswer||"").replace(/\s/g,"")[before+i]||""}</b>})}</span>)}</div>
           {lobbyRoom?.feedback==="wrong"&&<div className="projector-wrong">לא נכון — נסו שוב</div>}
         </div>}
-{lobbyRoom?.phase==="correct"&&<div className="projector-correct">✓ נכון! <b>{lobbyRoom?.lastAnswer}</b></div>}
+{lobbyRoom?.phase==="correct"&&<div className="projector-correct">✓ נכון! <b>{lobbyRoom?.lastAnswer}</b><button onClick={()=>teacherAction("advance")}>פתיחת החוליה</button></div>}
         {lobbyRoom?.phase==="transition"&&<div className="projector-transition">⛓ החוליה נפתחה! הבא/ה בתור: <b>{lobbyRoom?.nextPlayerName}</b><button onClick={()=>teacherAction("advance")}>לשאלה הבאה</button></div>}
         <div className="preview-secret projector-secret" dir="rtl">{secret.trim().split(/\s+/).map((word,wi)=><span className="preview-word" key={wi}>{word.split("").map((ch,ci)=>{
           if(!/[א-ת]/.test(ch))return <span className="preview-punctuation" key={ci}>{ch}</span>;
           const n=li++; return <span className="preview-letter" key={ci}>{(lobbyRoom?.revealedLetters||[]).includes(n)?ch:"•"}</span>
         })}</span>)}</div>
-        <div className="preview-progress"><b>{progress}</b><span>מתוך {count} חוליות</span></div>
+        <div className="preview-progress"><b>{progress}</b><span>מתוך {count} חוליות</span></div>{lobbyRoom?.status==="paused"&&<div className="projector-pause-overlay"><b>המשחק בהשהיה</b><span>נמשיך בעוד רגע</span></div>}
         {lobbyRoom?.status==="finished"&&<div className="projector-finale"><div className="finale-chain">⛓ ✨ ⛓</div><h1>השרשרת הושלמה!</h1><p>{secret}</p><small>כל הכבוד — כולנו חלק מהשרשרת</small></div>}
         <button className="projector-exit" onClick={()=>setProjector(false)}>יציאה ממצב מקרן</button>
       </div>
