@@ -40,7 +40,8 @@ function publicRoom(room){
     participantCount:Object.keys(room.participants||{}).length,
     questionCount:room.items?.length||0,
     version:room.version||0,
-    progress:room.progress||0
+    progress:room.progress||0,
+    liveAnswer:room.liveAnswer||""
   };
 }
 
@@ -97,7 +98,7 @@ export async function POST(req){
     const teacherToken=token();
     const room={
       code,teacherToken,topic,subject,grade,instructions,count,theme,secret,items,
-      status:"lobby",participants:{},progress:0,currentTurn:0,version:0,createdAt:Date.now()
+      status:"lobby",participants:{},progress:0,currentTurn:0,liveAnswer:"",version:0,createdAt:Date.now()
     };
     await save(room);
     return Response.json({code,teacherToken});
@@ -122,11 +123,22 @@ export async function POST(req){
     if(!Object.keys(room.participants||{}).length)return Response.json({error:"אין עדיין תלמידים מחוברים"},{status:409});
     if(!(room.items||[]).length)return Response.json({error:"אין עדיין שאלות במאגר. חזרו לעריכה וטענו את המאגר לפני תחילת המשחק."},{status:409});
     room.status="playing";
+    room.liveAnswer="";
     await save(room);
     return Response.json({
       ...publicRoom(room),
       participants:Object.values(room.participants||{}).map(p=>({id:p.id,name:p.name,joinedAt:p.joinedAt}))
     });
+  }
+
+  if(action==="typing"){
+    const pid=clean(body.participantId,40);
+    const players=Object.values(room.participants||{}).sort((a,b)=>a.joinedAt-b.joinedAt);
+    const current=players[(room.currentTurn||0)%players.length];
+    if(room.status!=="playing"||!current||current.id!==pid)return Response.json({error:"not_your_turn"},{status:409});
+    room.liveAnswer=clean(body.answer,120);
+    await save(room);
+    return Response.json({ok:true});
   }
 
   if(action==="answer"){
@@ -141,7 +153,8 @@ export async function POST(req){
     if(!item)return Response.json({error:"no_question"},{status:409});
     const norm=v=>clean(v,120).toLocaleLowerCase("he-IL").replace(/[\s"'״׳.,!?;:()\-–—]/g,"");
     const correct=norm(body.answer)===norm(item.answer);
-    if(!correct)return Response.json({correct:false,hint:item.hint});
+    if(!correct){room.liveAnswer=clean(body.answer,120);await save(room);return Response.json({correct:false,hint:item.hint});}
+    room.liveAnswer=clean(body.answer,120);
     room.progress=(room.progress||0)+1;
     room.currentTurn=(room.currentTurn||0)+1;
     if(room.progress>=Math.min(room.count,room.items.length))room.status="finished";
