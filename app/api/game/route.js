@@ -200,6 +200,7 @@ export async function POST(req){
   if(action==="advance"){
     if(!teacherOK(room,body.token))return Response.json({error:"forbidden"},{status:403});
     if(room.status==="finished")return Response.json(publicRoom(room));
+    if(room.phase==="correct"){room.phase="transition";await save(room);return Response.json(publicRoom(room));}
     room.phase="question";room.feedback="";room.liveAnswer="";room.hintedLetters=[];room.lastAnswer="";room.nextPlayerName="";
     await save(room); return Response.json(publicRoom(room));
   }
