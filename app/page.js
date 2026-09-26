@@ -10,6 +10,17 @@ const steps=[
   {n:4,label:"עיצוב והפעלה"}
 ];
 
+const themes=[
+  {name:"שרשרת זוהרת",mobile:"/chain-mobile.png"},
+  {name:"שביל מסתורין",mobile:"/mystery-path-mobile.png"},
+  {name:"מפת אוצר",mobile:"/treasure-map-mobile.png"},
+  {name:"גלקסיית ידע",mobile:"/galaxy-mobile.png"},
+  {name:"טבע וצמיחה",mobile:"/nature-mobile.png"},
+  {name:"מעבדת מדע",mobile:"/science-mobile.png"},
+  {name:"מסע ישראלי",mobile:"/israeli-journey-mobile.png"},
+  {name:"אבני דרך",mobile:"/milestones-mobile.png"}
+];
+
 export default function Home(){
   const [view,setView]=useState("home");
   const [step,setStep]=useState(1);
@@ -23,6 +34,7 @@ export default function Home(){
   const [items,setItems]=useState([]);
   const [secret,setSecret]=useState("");
   const [theme,setTheme]=useState("שרשרת זוהרת");
+  const selectedTheme=themes.find(t=>t.name===theme)||themes[0];
   const [roomCode]=useState("483921");
   const [studentLink,setStudentLink]=useState("");
   const [copied,setCopied]=useState(false);
@@ -118,7 +130,7 @@ export default function Home(){
 
       <section className="projector-preview">
         <picture className="preview-picture">
-          <source media="(max-width:720px)" srcSet="/chain-bg.png"/>
+          <source media="(max-width:720px)" srcSet={selectedTheme.mobile}/>
           <img src="/chain-bg-desktop.png" alt="" className="preview-bg"/>
         </picture>
         <div className="preview-overlay">
@@ -291,7 +303,10 @@ export default function Home(){
       {step===4&&<section className="panel">
         <div className="panel-title"><span>04</span><div><h2>עיצוב והפעלה</h2><p>בחרו את האווירה של מסך המשחק.</p></div></div>
         <div className="themes">
-          {["שרשרת זוהרת","שביל מסתורין","מפת אוצר","גלקסיית ידע","טבע וצמיחה","מעבדת מדע","מסע ישראלי","אבני דרך"].map(t=><button key={t} className={theme===t?"theme active":"theme"} onClick={()=>setTheme(t)}><span className="theme-dot"/><b>{t}</b></button>)}
+          {themes.map(t=><button key={t.name} className={theme===t.name?"theme active":"theme"} onClick={()=>setTheme(t.name)}>
+            <span className="theme-thumb"><img src={t.mobile} alt=""/></span>
+            <b>{t.name}</b>
+          </button>)}
         </div>
         <div className="theme-selection-note">העיצוב שבחרתם יוצג במסך המקרן. בשלב הבא תוכלו לראות תצוגה מקדימה מלאה.</div>
       </section>}
