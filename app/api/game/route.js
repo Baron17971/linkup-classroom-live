@@ -72,7 +72,7 @@ export async function GET(req){
     const players=Object.values(room.participants||{}).sort((a,b)=>a.joinedAt-b.joinedAt);
     const current=room.status==="playing"&&players.length?players[(room.currentTurn||0)%players.length]:null;
     const item=room.status==="playing"?(room.items||[])[room.progress||0]:null;
-    return Response.json({...publicRoom(room),participant:{id:p.id,name:p.name,joinedAt:p.joinedAt},turn:item&&current?{isMyTurn:current.id===p.id,participantName:current.name,question:current.id===p.id?item.question:null,hint:current.id===p.id?item.hint:null}:null});
+    return Response.json({...publicRoom(room),participant:{id:p.id,name:p.name,joinedAt:p.joinedAt},turn:item&&current?{isMyTurn:current.id===p.id,participantName:current.name,question:current.id===p.id?item.question:null,hint:current.id===p.id?item.hint:null,answerLength:current.id===p.id?item.answer.replace(/\s/g,"").length:0,firstLetter:current.id===p.id?item.answer.trim().charAt(0):""}:null});
   }
 
   return Response.json(publicRoom(room));
