@@ -25,6 +25,14 @@ button{cursor:pointer}
   border:0;border-radius:999px;background:transparent;
 }
 .home-teacher-hotspot:focus-visible{outline:4px solid rgba(255,255,255,.95);outline-offset:4px;box-shadow:0 0 0 8px rgba(10,120,140,.5)}
+.home-credit{
+  position:absolute;z-index:4;left:50%;bottom:14px;transform:translateX(-50%);
+  direction:rtl;white-space:nowrap;
+  padding:7px 13px;border-radius:999px;
+  background:rgba(255,253,248,.62);backdrop-filter:blur(5px);
+  color:#315c68;font-size:12px;font-weight:700;
+  text-shadow:0 1px 2px rgba(255,255,255,.7);
+}
 
 /* Teacher */
 .teacher-shell{
@@ -58,15 +66,12 @@ button{cursor:pointer}
   background:linear-gradient(270deg,rgba(255,253,248,.98),rgba(232,248,245,.82));
   border-bottom:1px solid rgba(34,143,150,.10);
 }
-.brand-logo-wrap{width:225px;max-width:31%;flex:0 0 auto;text-align:center}
+.brand-logo-wrap{width:285px;max-width:38%;flex:0 0 auto;text-align:center}
 .brand-logo{display:block;width:100%;height:auto;object-fit:contain}
-.home-link{margin-top:4px;border:0;background:transparent;color:#608188;font-size:12px;text-decoration:underline;text-underline-offset:3px}
 .brand-copy{flex:1;min-width:0;text-align:right}
 .brand-copy>span{display:inline-block;padding:6px 12px;border-radius:999px;background:#e5f7f4;color:var(--turq2);font-weight:800;font-size:13px}
 .brand-copy h1{margin:10px 0 6px;font-size:34px;line-height:1;color:#153f56}
 .brand-copy p{margin:0;color:var(--muted);font-size:15px}
-.creator-credit{margin-top:11px;color:#789095;font-size:12px;font-weight:600}
-
 .progress{
   display:grid;
   grid-template-columns:repeat(4,1fr);
@@ -133,10 +138,9 @@ textarea{min-height:110px;resize:vertical}
   .teacher-shell{padding:0}
   .teacher-card{border-radius:0;min-height:100vh}
   .brand-head{padding:18px 18px 16px;gap:14px;align-items:flex-start}
-  .brand-logo-wrap{width:132px;max-width:38%}
-  .home-link{font-size:11px}
+  .brand-logo-wrap{width:180px;max-width:44%}
   .brand-copy h1{font-size:24px}.brand-copy p{font-size:13px;line-height:1.45}
-  .creator-credit{font-size:10.5px;line-height:1.4}
+  .home-credit{bottom:10px;font-size:10px;padding:6px 10px}
   .progress{padding:15px 8px}.progress button span{display:none}.progress button:not(:last-child):after{inset-inline-start:61%;width:78%}
   .panel{padding:26px 18px 10px}.panel-title h2{font-size:25px}
   .form-grid{grid-template-columns:1fr}
