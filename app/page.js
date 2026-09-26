@@ -18,6 +18,7 @@ export default function Home(){
   const [instructions,setInstructions]=useState("");
   const [count,setCount]=useState(30);
   const [bank,setBank]=useState("");
+  const [bankLoaded,setBankLoaded]=useState(false);
   const [secret,setSecret]=useState("");
   const [theme,setTheme]=useState("שרשרת זוהרת");
 
@@ -30,6 +31,10 @@ export default function Home(){
 החזר בלבד בפורמט:
 שאלה | תשובה | רמז`,[subject,grade,topic,count]);
 
+  const secretPrompt=useMemo(()=>`צור משפט סיום קצר, חיובי ומשמעותי בנושא ${topic||"[נושא]"}, המתאים לתלמידי כיתה ${grade||"[כיתה]"}.
+המשפט חייב להכיל בדיוק ${count} אותיות, ללא ספירת רווחים, סימני פיסוק, מספרים או מקפים.
+החזר רק את המשפט עצמו, ללא הסבר וללא ספירת אותיות.`,[topic,grade,count]);
+
   function go(n){
     setStep(n);
     requestAnimationFrame(()=>window.scrollTo({top:0,behavior:"smooth"}));
@@ -38,6 +43,11 @@ export default function Home(){
   function openTeacher(){
     setView("teacher");
     requestAnimationFrame(()=>window.scrollTo({top:0,behavior:"instant"}));
+  }
+
+  function loadBank(){
+    const valid=bank.split(/\r?\n/).map(x=>x.trim()).filter(x=>x && x.split("|").length>=3);
+    setBankLoaded(valid.length>0);
   }
 
   let countMessage="";
@@ -61,9 +71,7 @@ export default function Home(){
   return <main className="teacher-shell">
     <section className="teacher-card">
       <header className="brand-head">
-        <div className="brand-logo-wrap">
-          <img src="/LinkUp-logo.png" alt="LinkUp — כולנו חלק מהשרשרת" className="brand-logo"/>
-        </div>
+        <img src="/LinkUp-logo.png" alt="LinkUp — כולנו חלק מהשרשרת" className="brand-logo"/>
         <div className="brand-copy">
           <span>צד המורה</span>
           <h1>יצירת משחק חדש</h1>
@@ -102,15 +110,24 @@ export default function Home(){
           <button className="soft" onClick={()=>navigator.clipboard.writeText(aiPrompt)}>העתקת פרומפט</button>
         </div>
         <label>הדבק כאן את המאגר שלך
-          <textarea className="bank" value={bank} onChange={e=>setBank(e.target.value)} placeholder={"שאלה | תשובה | רמז\nבאיזה אברון מתרחשת הנשימה התאית? | מיטוכונדריה | מכונה תחנת הכוח של התא"}/>
+          <textarea className="bank" value={bank} onChange={e=>{setBank(e.target.value);setBankLoaded(false)}} placeholder={"שאלה | תשובה | רמז\nבאיזה אברון מתרחשת הנשימה התאית? | מיטוכונדריה | מכונה תחנת הכוח של התא"}/>
         </label>
-        <div className="bank-note"><b>{bank.split(/\r?\n/).filter(Boolean).length}</b><span>שורות במאגר</span></div>
+        <div className="bank-actions">
+          <button className="load-bank" onClick={loadBank}>טעינת המאגר</button>
+          <div className="bank-note"><b>{bank.split(/\r?\n/).filter(Boolean).length}</b><span>שורות במאגר</span></div>
+        </div>
+        {bankLoaded&&<div className="bank-loaded">✓ המאגר נטען בהצלחה</div>}
       </section>}
 
       {step===3&&<section className="panel">
         <div className="panel-title"><span>03</span><div><h2>משפט המסתורין</h2><p>כל תשובה נכונה תחשוף אות אחת.</p></div></div>
+        <div className="ai-box secret-ai">
+          <div><h3>יצירת משפט הסיום בעזרת AI</h3><p>הפרומפט מותאם אוטומטית למספר השאלות שבחרתם: <b>{count}</b> אותיות.</p></div>
+          <textarea className="prompt secret-prompt" readOnly value={secretPrompt}/>
+          <button className="soft" onClick={()=>navigator.clipboard.writeText(secretPrompt)}>העתקת פרומפט</button>
+        </div>
         <label>משפט המסתורין
-          <textarea className="secret" value={secret} onChange={e=>setSecret(e.target.value)} placeholder="הקלידו משפט שמספר האותיות בו תואם למספר החוליות"/>
+          <textarea className="secret" value={secret} onChange={e=>setSecret(e.target.value)} placeholder={"הדביקו כאן משפט בן בדיוק "+count+" אותיות"}/>
         </label>
         <div className={letters===count?"letter-count exact":"letter-count"}>
           <strong>{letters}</strong><span>מתוך {count} אותיות</span>
