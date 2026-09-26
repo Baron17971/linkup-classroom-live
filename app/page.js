@@ -42,6 +42,7 @@ export default function Home(){
   const [creatingRoom,setCreatingRoom]=useState(false);
   const [roomError,setRoomError]=useState("");
   const [lobbyRoom,setLobbyRoom]=useState(null);
+  const [projector,setProjector]=useState(false);
 
   const letters=useMemo(()=>secret.replace(/[\s\-–—.,!?'"״׳:;()]/g,"").length,[secret]);
 
@@ -171,6 +172,26 @@ export default function Home(){
   else if(letters<count) countMessage="חסרות "+(count-letters)+" אותיות";
   else countMessage="יש "+(letters-count)+" אותיות מיותרות";
 
+  if(projector&&roomCode){
+    const progress=lobbyRoom?.progress||0;
+    const chars=secret.split("");
+    let li=0;
+    return <main className="projector-live">
+      <picture className="preview-picture"><source media="(max-width:720px)" srcSet={selectedTheme.mobile}/><img src="/chain-bg-desktop.png" alt="" className="preview-bg"/></picture>
+      <div className="preview-overlay">
+        <img src="/linkup-logo2.png" alt="LinkUp" className="preview-logo"/>
+        <div className="preview-topic">{topic}</div>
+        <div className="preview-secret projector-secret" dir="rtl">{chars.map((ch,i)=>{
+          if(!/[א-ת]/.test(ch))return ch===" "?<span className="projector-space" key={i}/>:<span className="preview-punctuation" key={i}>{ch}</span>;
+          const n=li++; return <span className="preview-letter" key={i}>{n<progress?ch:"•"}</span>
+        })}</div>
+        <div className="preview-progress"><b>{progress}</b><span>מתוך {count} חוליות</span></div>
+        {lobbyRoom?.status==="finished"&&<div className="projector-finish">השרשרת הושלמה!</div>}
+        <button className="projector-exit" onClick={()=>setProjector(false)}>יציאה ממצב מקרן</button>
+      </div>
+    </main>;
+  }
+
   if(view==="preview"){
     const hiddenSentence=secret
       ? secret.trim().split(/\s+/).map((word,wi)=>
@@ -250,6 +271,7 @@ export default function Home(){
         {roomError&&<div className="room-error">{roomError}</div>}
 
         <div className="lobby-actions">
+          <button className="projector-button" onClick={()=>setProjector(true)}>מצב מקרן</button>
           <button className="back" onClick={()=>{setView("teacher");setStep(4)}}>חזרה לעריכה</button>
           <button className="next" onClick={startGame} disabled={!lobbyRoom?.participantCount||lobbyRoom?.status==="playing"}>{lobbyRoom?.status==="playing"?"המשחק התחיל":"התחל משחק"}</button>
         </div>
