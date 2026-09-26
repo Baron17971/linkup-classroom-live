@@ -57,7 +57,11 @@ export async function GET(req){
     if(!teacherOK(room,t))return Response.json({error:"forbidden"},{status:403});
     return Response.json({
       ...publicRoom(room),
-      participants:Object.values(room.participants||{}).map(p=>({id:p.id,name:p.name,joinedAt:p.joinedAt}))
+      participants:Object.values(room.participants||{}).map(p=>({id:p.id,name:p.name,joinedAt:p.joinedAt})),
+      currentQuestion:room.status==="playing"?(room.items||[])[room.progress||0]?.question||"": "",
+      currentHint:room.status==="playing"?(room.items||[])[room.progress||0]?.hint||"": "",
+      currentAnswerLength:room.status==="playing"?((room.items||[])[room.progress||0]?.answer||"").replace(/\s/g,"").length:0,
+      currentPlayerName:(()=>{const ps=Object.values(room.participants||{}).sort((a,b)=>a.joinedAt-b.joinedAt);return ps.length?ps[(room.currentTurn||0)%ps.length].name:""})()
     });
   }
 
