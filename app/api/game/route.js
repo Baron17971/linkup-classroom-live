@@ -42,7 +42,12 @@ function publicRoom(room){
     version:room.version||0,
     progress:room.progress||0,
     liveAnswer:room.liveAnswer||"",
-    revealedLetters:room.revealedLetters||[]
+    revealedLetters:room.revealedLetters||[],
+    phase:room.phase||"question",
+    paused:!!room.paused,
+    feedback:room.feedback||"",
+    lastAnswer:room.lastAnswer||"",
+    nextPlayerName:room.nextPlayerName||""
   };
 }
 
@@ -59,9 +64,10 @@ export async function GET(req){
     return Response.json({
       ...publicRoom(room),
       participants:Object.values(room.participants||{}).map(p=>({id:p.id,name:p.name,joinedAt:p.joinedAt})),
-      currentQuestion:room.status==="playing"?(room.items||[])[room.progress||0]?.question||"": "",
-      currentHint:room.status==="playing"?(room.items||[])[room.progress||0]?.hint||"": "",
-      currentAnswerLength:room.status==="playing"?((room.items||[])[room.progress||0]?.answer||"").replace(/\s/g,"").length:0,
+      currentQuestion:["playing","paused"].includes(room.status)?(room.items||[])[room.progress||0]?.question||"": "",
+      currentHint:["playing","paused"].includes(room.status)?(room.items||[])[room.progress||0]?.hint||"": "",
+      currentAnswer:["playing","paused"].includes(room.status)?(room.items||[])[room.progress||0]?.answer||"": "",
+      currentAnswerLength:["playing","paused"].includes(room.status)?((room.items||[])[room.progress||0]?.answer||"").replace(/\s/g,"").length:0,
       currentPlayerName:(()=>{const ps=Object.values(room.participants||{}).sort((a,b)=>a.joinedAt-b.joinedAt);return ps.length?ps[(room.currentTurn||0)%ps.length].name:""})()
     });
   }
@@ -71,9 +77,10 @@ export async function GET(req){
     const p=room.participants?.[pid];
     if(!p)return Response.json({error:"student_not_found"},{status:404});
     const players=Object.values(room.participants||{}).sort((a,b)=>a.joinedAt-b.joinedAt);
-    const current=room.status==="playing"&&players.length?players[(room.currentTurn||0)%players.length]:null;
-    const item=room.status==="playing"?(room.items||[])[room.progress||0]:null;
-    return Response.json({...publicRoom(room),participant:{id:p.id,name:p.name,joinedAt:p.joinedAt},turn:item&&current?{isMyTurn:current.id===p.id,participantName:current.name,question:current.id===p.id?item.question:null,hint:current.id===p.id?item.hint:null,answerLength:current.id===p.id?item.answer.replace(/\s/g,"").length:0,firstLetter:current.id===p.id?item.answer.trim().charAt(0):""}:null});
+    const active=["playing","paused"].includes(room.status);
+    const current=active&&players.length?players[(room.currentTurn||0)%players.length]:null;
+    const item=active?(room.items||[])[room.progress||0]:null;
+    return Response.json({...publicRoom(room),participant:{id:p.id,name:p.name,joinedAt:p.joinedAt},turn:item&&current?{isMyTurn:current.id===p.id,participantName:current.name,question:current.id===p.id?item.question:null,hint:current.id===p.id?item.hint:null,answerLength:current.id===p.id?item.answer.replace(/\s/g,"").length:0,answerPattern:current.id===p.id?item.answer.split(/(\s+)/).map(x=>/^\s+$/.test(x)?" ":x.length):[],firstLetter:current.id===p.id?item.answer.trim().charAt(0):""}:null});
   }
 
   return Response.json(publicRoom(room));
@@ -103,7 +110,7 @@ export async function POST(req){
     const teacherToken=token();
     const room={
       code,teacherToken,topic,subject,grade,instructions,count,theme,secret,items,
-      status:"lobby",participants:{},progress:0,currentTurn:0,liveAnswer:"",revealedLetters:[],version:0,createdAt:Date.now()
+      status:"lobby",participants:{},progress:0,currentTurn:0,liveAnswer:"",revealedLetters:[],phase:"question",paused:false,feedback:"",lastAnswer:"",nextPlayerName:"",version:0,createdAt:Date.now()
     };
     await save(room);
     return Response.json({code,teacherToken});
@@ -128,7 +135,7 @@ export async function POST(req){
     if(!Object.keys(room.participants||{}).length)return Response.json({error:"אין עדיין תלמידים מחוברים"},{status:409});
     if(!(room.items||[]).length)return Response.json({error:"אין עדיין שאלות במאגר. חזרו לעריכה וטענו את המאגר לפני תחילת המשחק."},{status:409});
     room.status="playing";
-    room.liveAnswer="";
+    room.liveAnswer=""; room.phase="question"; room.paused=false; room.feedback=""; room.lastAnswer=""; room.nextPlayerName="";
     await save(room);
     return Response.json({
       ...publicRoom(room),
@@ -141,7 +148,7 @@ export async function POST(req){
     const players=Object.values(room.participants||{}).sort((a,b)=>a.joinedAt-b.joinedAt);
     const current=players[(room.currentTurn||0)%players.length];
     if(room.status!=="playing"||!current||current.id!==pid)return Response.json({error:"not_your_turn"},{status:409});
-    room.liveAnswer=clean(body.answer,120);
+    room.liveAnswer=clean(body.answer,120); room.feedback="";
     await save(room);
     return Response.json({ok:true});
   }
@@ -158,8 +165,9 @@ export async function POST(req){
     if(!item)return Response.json({error:"no_question"},{status:409});
     const norm=v=>clean(v,120).toLocaleLowerCase("he-IL").replace(/[\s"'״׳.,!?;:()\-–—]/g,"");
     const correct=norm(body.answer)===norm(item.answer);
-    if(!correct){room.liveAnswer=clean(body.answer,120);await save(room);return Response.json({correct:false,hint:item.hint});}
+    if(!correct){room.liveAnswer=clean(body.answer,120);room.feedback="wrong";await save(room);return Response.json({correct:false,hint:item.hint});}
     room.liveAnswer=clean(body.answer,120);
+    room.lastAnswer=item.answer; room.feedback="correct"; room.phase="correct";
     const letterCount=(room.secret||"").split("").filter(ch=>/[א-ת]/.test(ch)).length;
     const revealed=new Set(room.revealedLetters||[]);
     const available=Array.from({length:letterCount},(_,i)=>i).filter(i=>!revealed.has(i));
@@ -169,9 +177,33 @@ export async function POST(req){
     }
     room.progress=(room.progress||0)+1;
     room.currentTurn=(room.currentTurn||0)+1;
-    if(room.progress>=Math.min(room.count,room.items.length))room.status="finished";
+    if(room.progress>=Math.min(room.count,room.items.length)){room.status="finished";room.phase="finished";room.liveAnswer="";}
+    else {room.phase="transition";room.nextPlayerName=players[room.currentTurn%players.length]?.name||"";}
     await save(room);
     return Response.json({correct:true,progress:room.progress,status:room.status});
+  }
+
+  if(action==="advance"){
+    if(!teacherOK(room,body.token))return Response.json({error:"forbidden"},{status:403});
+    if(room.status==="finished")return Response.json(publicRoom(room));
+    room.phase="question";room.feedback="";room.liveAnswer="";room.lastAnswer="";room.nextPlayerName="";
+    await save(room); return Response.json(publicRoom(room));
+  }
+  if(["skip","next_player","reveal","pause"].includes(action)){
+    if(!teacherOK(room,body.token))return Response.json({error:"forbidden"},{status:403});
+    const players=Object.values(room.participants||{}).sort((a,b)=>a.joinedAt-b.joinedAt);
+    if(action==="pause"){room.paused=!room.paused;room.status=room.paused?"paused":"playing";await save(room);return Response.json(publicRoom(room));}
+    if(action==="next_player"){room.currentTurn=(room.currentTurn||0)+1;room.liveAnswer="";room.feedback="";room.phase="question";await save(room);return Response.json(publicRoom(room));}
+    if(action==="skip"){room.progress=(room.progress||0)+1;room.currentTurn=(room.currentTurn||0)+1;room.liveAnswer="";room.feedback="";if(room.progress>=Math.min(room.count,room.items.length)){room.status="finished";room.phase="finished"}else room.phase="question";await save(room);return Response.json(publicRoom(room));}
+    if(action==="reveal"){
+      const item=(room.items||[])[room.progress||0]; if(!item)return Response.json({error:"no_question"},{status:409});
+      room.liveAnswer=item.answer;room.lastAnswer=item.answer;room.feedback="correct";room.phase="correct";
+      const letterCount=(room.secret||"").split("").filter(ch=>/[א-ת]/.test(ch)).length, revealed=new Set(room.revealedLetters||[]), available=Array.from({length:letterCount},(_,i)=>i).filter(i=>!revealed.has(i));
+      if(available.length)room.revealedLetters=[...revealed,available[crypto.randomInt(0,available.length)]];
+      room.progress=(room.progress||0)+1;room.currentTurn=(room.currentTurn||0)+1;
+      if(room.progress>=Math.min(room.count,room.items.length)){room.status="finished";room.phase="finished";room.liveAnswer=""}else{room.phase="transition";room.nextPlayerName=players[room.currentTurn%players.length]?.name||""}
+      await save(room);return Response.json(publicRoom(room));
+    }
   }
 
   return Response.json({error:"action"},{status:400});
