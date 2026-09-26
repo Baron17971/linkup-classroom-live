@@ -35,15 +35,35 @@ export default function Home(){
   const [secret,setSecret]=useState("");
   const [theme,setTheme]=useState("שרשרת זוהרת");
   const selectedTheme=themes.find(t=>t.name===theme)||themes[0];
-  const [roomCode]=useState("483921");
+  const [roomCode,setRoomCode]=useState("");
+  const [teacherToken,setTeacherToken]=useState("");
   const [studentLink,setStudentLink]=useState("");
   const [copied,setCopied]=useState(false);
+  const [creatingRoom,setCreatingRoom]=useState(false);
+  const [roomError,setRoomError]=useState("");
+  const [lobbyRoom,setLobbyRoom]=useState(null);
 
   const letters=useMemo(()=>secret.replace(/[\s\-–—.,!?'"״׳:;()]/g,"").length,[secret]);
 
   useEffect(()=>{
-    setStudentLink(window.location.origin+"/join/"+roomCode);
+    setStudentLink(roomCode?window.location.origin+"/join/"+roomCode:"");
   },[roomCode]);
+
+  useEffect(()=>{
+    if(view!=="lobby"||!roomCode||!teacherToken)return;
+    let alive=true;
+    async function loadLobby(){
+      try{
+        const r=await fetch(`/api/game?code=${roomCode}&role=teacher&token=${teacherToken}`,{cache:"no-store"});
+        const d=await r.json();
+        if(!r.ok)throw new Error(d.error||"שגיאה בטעינת החדר");
+        if(alive){setLobbyRoom(d);setRoomError("");}
+      }catch(e){if(alive)setRoomError(e.message)}
+    }
+    loadLobby();
+    const timer=setInterval(loadLobby,1000);
+    return()=>{alive=false;clearInterval(timer)};
+  },[view,roomCode,teacherToken]);
 
   const aiPrompt=useMemo(()=>`אני מורה ל${subject||"[מקצוע]"} ומלמד/ת תלמידי כיתה ${grade||"[כיתה]"} את הנושא: ${topic||"[נושא]"}.
 צור ${count} שאלות קצרות למשחק כיתתי.
@@ -103,6 +123,49 @@ export default function Home(){
     setBankLoaded(items.length>0);
   }
 
+  async function createRoom(){
+    if(creatingRoom)return;
+    setCreatingRoom(true);
+    setRoomError("");
+    try{
+      const currentItems=items.length?items:bank.split(/\r?\n/).map((line,index)=>{
+        const parts=line.split("|").map(x=>x.trim());
+        if(parts.length<3)return null;
+        return {id:index+1,question:parts[0],answer:parts[1],hint:parts.slice(2).join(" | ")};
+      }).filter(Boolean);
+      const r=await fetch("/api/game",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({action:"create",topic,subject,grade,instructions,count,theme,secret,items:currentItems})
+      });
+      const d=await r.json();
+      if(!r.ok)throw new Error(d.error||"לא ניתן לפתוח חדר");
+      setRoomCode(d.code);
+      setTeacherToken(d.teacherToken);
+      setLobbyRoom(null);
+      setView("lobby");
+    }catch(e){
+      setRoomError(e.message);
+    }finally{
+      setCreatingRoom(false);
+    }
+  }
+
+  async function startGame(){
+    if(!roomCode||!teacherToken)return;
+    try{
+      const r=await fetch("/api/game",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({action:"start",code:roomCode,token:teacherToken})
+      });
+      const d=await r.json();
+      if(!r.ok)throw new Error(d.error||"לא ניתן להתחיל");
+      setLobbyRoom(d);
+      setRoomError("");
+    }catch(e){setRoomError(e.message)}
+  }
+
   let countMessage="";
   if(letters===count) countMessage="✓ התאמה מושלמת";
   else if(letters<count) countMessage="חסרות "+(count-letters)+" אותיות";
@@ -125,7 +188,7 @@ export default function Home(){
       <section className="preview-topbar">
         <button className="back" onClick={()=>{setView("teacher");setStep(4)}}>חזרה לעיצוב</button>
         <div><b>תצוגה מקדימה</b><span>כך ייראה מסך המשחק על המקרן</span></div>
-        <button className="next" onClick={()=>setView("lobby")}>המשך ללובי</button>
+        <button className="next" disabled={creatingRoom} onClick={createRoom}>{creatingRoom?"פותח חדר...":"המשך ללובי"}</button>
       </section>
 
       <section className="projector-preview">
@@ -173,16 +236,22 @@ export default function Home(){
         </div>
 
         <div className="lobby-stats">
-          <div><b>0</b><span>תלמידים מחוברים</span></div>
+          <div><b>{lobbyRoom?.participantCount||0}</b><span>תלמידים מחוברים</span></div>
           <div><b>{count}</b><span>חוליות בשרשרת</span></div>
           <div><b>{items.length||count}</b><span>שאלות במאגר</span></div>
         </div>
 
-        <div className="lobby-wait">ממתינים לתלמידים…</div>
+        {!!lobbyRoom?.participants?.length&&<div className="connected-students">
+          <b>מחוברים עכשיו</b>
+          <div>{lobbyRoom.participants.map(p=><span key={p.id}>✓ {p.name}</span>)}</div>
+        </div>}
+
+        <div className="lobby-wait">{lobbyRoom?.status==="playing"?"המשחק התחיל ✓":"ממתינים לתלמידים…"}</div>
+        {roomError&&<div className="room-error">{roomError}</div>}
 
         <div className="lobby-actions">
           <button className="back" onClick={()=>{setView("teacher");setStep(4)}}>חזרה לעריכה</button>
-          <button className="next" disabled>התחל משחק</button>
+          <button className="next" onClick={startGame} disabled={!lobbyRoom?.participantCount||lobbyRoom?.status==="playing"}>{lobbyRoom?.status==="playing"?"המשחק התחיל":"התחל משחק"}</button>
         </div>
       </section>
     </main>;
