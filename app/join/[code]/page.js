@@ -76,17 +76,21 @@ export default function JoinRoom(){
 
   if(participantId){
     const playing=room?.status==="playing";
+    const paused=room?.status==="paused";
     const finished=room?.status==="finished";
     const mine=room?.turn?.isMyTurn;
     return <main className="student-join-shell">
       <section className="student-join-card waiting-card">
         <img src="/linkup-logo2.png" alt="LinkUp" className="student-join-logo"/>
         {!playing&&!finished&&<><div className="waiting-dot">✓</div><h1>התחברת למשחק</h1><p><b>{room?.participant?.name||name}</b>, מחכים שהמורה יתחיל את השרשרת.</p></>}
-        {playing&&!mine&&<><div className="waiting-dot">⛓</div><h1>השרשרת בתנועה</h1><p><b>{room?.participant?.name||name}</b>, ממתינים לתורך. כרגע משחק/ת: <b>{room?.turn?.participantName||""}</b></p><div className="student-chain-progress">{room?.progress||0} מתוך {room?.count||0} חוליות</div></>}
-        {playing&&mine&&<div className="student-question-card">
+        {paused&&<><div className="waiting-dot">Ⅱ</div><h1>המשחק בהשהיה</h1><p>המורה יחזיר את המשחק בעוד רגע.</p></>}
+        {playing&&room?.phase==="transition"&&<><div className="waiting-dot">⛓</div><h1>החוליה נפתחה!</h1><p>הבא/ה בתור: <b>{room?.nextPlayerName}</b></p></>}
+        {playing&&room?.phase==="correct"&&<><div className="waiting-dot">✓</div><h1>נכון!</h1><p>התשובה: <b>{room?.lastAnswer}</b></p></>}
+        {playing&&room?.phase==="question"&&!mine&&<><div className="waiting-dot">⛓</div><h1>השרשרת בתנועה</h1><p><b>{room?.participant?.name||name}</b>, ממתינים לתורך. כרגע משחק/ת: <b>{room?.turn?.participantName||""}</b></p><div className="student-chain-progress">{room?.progress||0} מתוך {room?.count||0} חוליות</div></>}
+        {playing&&room?.phase==="question"&&mine&&<div className="student-question-card">
           <div className="student-turn-badge">התור שלך</div>
           <h1>{room?.turn?.question}</h1>
-          <div className="letter-boxes" dir="rtl">{Array.from({length:room?.turn?.answerLength||0}).map((_,i)=><span key={i}>{answer.replace(/\s/g,"")[i]||""}</span>)}</div>
+          <div className="letter-boxes words" dir="rtl">{(room?.turn?.answerPattern||[]).map((part,pi)=>part===" "?<i className="answer-word-space" key={pi}/>:<span className="answer-word" key={pi}>{Array.from({length:part}).map((_,i)=>{const before=(room.turn.answerPattern||[]).slice(0,pi).filter(x=>x!==" ").reduce((s,x)=>s+x,0);return <b key={i}>{answer.replace(/\s/g,"")[before+i]||""}</b>})}</span>)}</div>
           <input className="answer-hidden-input" value={answer} maxLength={room?.turn?.answerLength||80} autoFocus onChange={e=>{const v=e.target.value;setAnswer(v);setFeedback("");pushTyping(v)}} onKeyDown={e=>{if(e.key==="Enter")submitAnswer()}} placeholder="הקלידו את התשובה"/>
           {showHint&&!hintMode&&<div className="hint-choices"><button onClick={()=>setHintMode("word")}>רמז מילולי</button><button onClick={()=>setHintMode("letter")}>חשיפת אות</button></div>}
           {showHint&&hintMode==="word"&&room?.turn?.hint&&<div className="student-hint">רמז: {room.turn.hint}</div>}
