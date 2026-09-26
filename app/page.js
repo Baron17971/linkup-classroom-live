@@ -188,7 +188,7 @@ export default function Home(){
         </div>}
         <div className="preview-secret projector-secret" dir="rtl">{chars.map((ch,i)=>{
           if(!/[א-ת]/.test(ch))return ch===" "?<span className="projector-space" key={i}/>:<span className="preview-punctuation" key={i}>{ch}</span>;
-          const n=li++; return <span className="preview-letter" key={i}>{n<progress?ch:"•"}</span>
+          const n=li++; return <span className="preview-letter" key={i}>{(lobbyRoom?.revealedLetters||[]).includes(n)?ch:"•"}</span>
         })}</div>
         <div className="preview-progress"><b>{progress}</b><span>מתוך {count} חוליות</span></div>
         {lobbyRoom?.status==="finished"&&<div className="projector-finish">השרשרת הושלמה!</div>}
