@@ -19,6 +19,7 @@ export default function Home(){
   const [count,setCount]=useState(30);
   const [bank,setBank]=useState("");
   const [bankLoaded,setBankLoaded]=useState(false);
+  const [items,setItems]=useState([]);
   const [secret,setSecret]=useState("");
   const [theme,setTheme]=useState("שרשרת זוהרת");
 
@@ -46,8 +47,35 @@ export default function Home(){
   }
 
   function loadBank(){
-    const valid=bank.split(/\r?\n/).map(x=>x.trim()).filter(x=>x && x.split("|").length>=3);
-    setBankLoaded(valid.length>0);
+    const parsed=bank.split(/\r?\n/)
+      .map(x=>x.trim())
+      .filter(Boolean)
+      .map((line,index)=>{
+        const parts=line.split("|").map(x=>x.trim());
+        if(parts.length<3) return null;
+        return {id:index+1,question:parts[0],answer:parts[1],hint:parts.slice(2).join(" | ")};
+      })
+      .filter(Boolean);
+    setItems(parsed);
+    setBankLoaded(parsed.length>0);
+  }
+
+  function updateItem(id,key,value){
+    setItems(prev=>prev.map(item=>item.id===id?{...item,[key]:value}:item));
+  }
+
+  function removeItem(id){
+    setItems(prev=>prev.filter(item=>item.id!==id));
+  }
+
+  function addItem(){
+    setItems(prev=>[...prev,{id:Date.now(),question:"",answer:"",hint:""}]);
+  }
+
+  function syncBank(){
+    const text=items.map(item=>[item.question,item.answer,item.hint].join(" | ")).join("\n");
+    setBank(text);
+    setBankLoaded(items.length>0);
   }
 
   let countMessage="";
@@ -116,7 +144,36 @@ export default function Home(){
           <button className="load-bank" onClick={loadBank}>טעינת המאגר</button>
           <div className="bank-note"><b>{bank.split(/\r?\n/).filter(Boolean).length}</b><span>שורות במאגר</span></div>
         </div>
-        {bankLoaded&&<div className="bank-loaded">✓ המאגר נטען בהצלחה</div>}
+        {bankLoaded&&<>
+          <div className="bank-loaded">✓ המאגר נטען בהצלחה · ניתן לערוך את כל הפריטים לפני המשך</div>
+          <div className="items-editor">
+            <div className="items-editor-head">
+              <div>
+                <h3>עריכת הפריטים</h3>
+                <p>{items.length} פריטים במאגר</p>
+              </div>
+              <button className="add-item" onClick={addItem}>＋ הוסף פריט</button>
+            </div>
+            <div className="items-list">
+              {items.map((item,index)=><article className="item-card" key={item.id}>
+                <div className="item-number">{index+1}</div>
+                <label>שאלה
+                  <textarea value={item.question} onChange={e=>updateItem(item.id,"question",e.target.value)} />
+                </label>
+                <div className="item-two">
+                  <label>תשובה
+                    <input value={item.answer} onChange={e=>updateItem(item.id,"answer",e.target.value)} />
+                  </label>
+                  <label>רמז
+                    <input value={item.hint} onChange={e=>updateItem(item.id,"hint",e.target.value)} />
+                  </label>
+                </div>
+                <button className="remove-item" onClick={()=>removeItem(item.id)}>מחק פריט</button>
+              </article>)}
+            </div>
+            <button className="save-items" onClick={syncBank}>שמירת השינויים במאגר</button>
+          </div>
+        </>}
       </section>}
 
       {step===3&&<section className="panel">
