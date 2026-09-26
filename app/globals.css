@@ -625,3 +625,18 @@ textarea{min-height:110px;resize:vertical}
   font-weight:700;
   font-size:13px;
 }
+
+/* Live gameplay */
+.student-question-card{width:100%;display:grid;gap:14px;text-align:right}
+.student-question-card h1{font-size:24px;line-height:1.45;margin:4px 0}
+.student-turn-badge{justify-self:center;padding:7px 14px;border-radius:999px;background:#dff6f2;color:#0e8589;font-weight:900}
+.student-hint,.student-feedback,.student-chain-progress{padding:12px 14px;border-radius:14px;background:#fff5df;color:#496b72;font-weight:800}
+.student-feedback{background:#e7f7f2;color:#117f72}
+.projector-button{border:0;border-radius:14px;padding:13px 20px;background:#163f53;color:#fff;font-weight:900}
+.projector-live{position:fixed;inset:0;overflow:hidden;background:#102b36;z-index:100}
+.projector-live .preview-overlay{z-index:2}
+.projector-secret{background:rgba(255,253,248,.82);border:1px solid rgba(255,255,255,.68);border-radius:26px;box-shadow:0 14px 40px rgba(22,72,82,.10);backdrop-filter:blur(4px)}
+.projector-space{width:22px;height:36px}
+.projector-finish{margin-top:14px;padding:10px 20px;border-radius:999px;background:rgba(255,253,248,.9);color:#108b75;font-size:24px;font-weight:900}
+.projector-exit{position:absolute;left:18px;bottom:18px;border:0;border-radius:999px;padding:10px 15px;background:rgba(17,52,65,.72);color:white;font-weight:800}
+@media(max-width:720px){.lobby-actions{flex-wrap:wrap}.projector-button{width:100%}.student-question-card h1{font-size:21px}}
