@@ -640,3 +640,12 @@ textarea{min-height:110px;resize:vertical}
 .projector-finish{margin-top:14px;padding:10px 20px;border-radius:999px;background:rgba(255,253,248,.9);color:#108b75;font-size:24px;font-weight:900}
 .projector-exit{position:absolute;left:18px;bottom:18px;border:0;border-radius:999px;padding:10px 15px;background:rgba(17,52,65,.72);color:white;font-weight:800}
 @media(max-width:720px){.lobby-actions{flex-wrap:wrap}.projector-button{width:100%}.student-question-card h1{font-size:21px}}
+
+.letter-boxes{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;margin:10px 0}
+.letter-boxes span{width:42px;height:48px;border:2px solid #9edbd5;border-radius:10px;background:#fff;display:grid;place-items:center;font-size:24px;font-weight:900;color:#174c5c}
+.answer-hidden-input{text-align:center;font-size:18px}
+.hint-choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hint-choices button{border:1px solid #bfe2dc;border-radius:13px;padding:12px;background:#eef9f6;color:#117d82;font-weight:900}
+.projector-question-panel{width:min(72vw,920px);padding:16px 22px;margin:8px 0 12px;border-radius:22px;background:rgba(255,253,248,.9);box-shadow:0 12px 34px rgba(22,72,82,.1)}
+.projector-question-panel small{color:#628088;font-weight:800}.projector-question-panel h2{margin:6px 0 10px;color:#153f52;font-size:clamp(20px,2.3vw,34px)}
+.projector-live-answer{min-height:38px;padding:8px 14px;border-radius:12px;background:#e7f7f4;color:#10878b;font-size:clamp(18px,2vw,28px);font-weight:900}
