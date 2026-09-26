@@ -1,0 +1,105 @@
+*{box-sizing:border-box}
+:root{
+  --cream:#fbf7ee;
+  --cream2:#f4ecdc;
+  --paper:#fffdf8;
+  --turq:#22b7b2;
+  --turq2:#0f8f96;
+  --ink:#153a4e;
+  --muted:#748d95;
+  --gold:#d7a94b;
+}
+html,body{margin:0;min-height:100%;font-family:Arial,"Noto Sans Hebrew",sans-serif;background:var(--cream);color:var(--ink)}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+.teacher-shell{
+  min-height:100vh;
+  padding:34px 20px 54px;
+  background:
+    radial-gradient(circle at 8% 8%,rgba(34,183,178,.13),transparent 26%),
+    radial-gradient(circle at 92% 16%,rgba(215,169,75,.10),transparent 20%),
+    linear-gradient(180deg,#fffdf8 0%,#f6efe2 100%);
+}
+.teacher-card{
+  width:min(100%,960px);
+  margin:auto;
+  background:rgba(255,253,248,.92);
+  border:1px solid rgba(34,143,150,.12);
+  border-radius:32px;
+  box-shadow:0 24px 70px rgba(53,80,83,.12);
+  overflow:hidden;
+}
+.brand-head{
+  display:flex;
+  align-items:center;
+  gap:26px;
+  padding:28px 36px 20px;
+  background:linear-gradient(90deg,rgba(255,253,248,.98),rgba(232,248,245,.82));
+  border-bottom:1px solid rgba(34,143,150,.10);
+}
+.brand-logo{width:220px;max-width:30%;height:auto;object-fit:contain}
+.brand-copy span{display:inline-block;padding:6px 12px;border-radius:999px;background:#e5f7f4;color:var(--turq2);font-weight:800;font-size:13px}
+.brand-copy h1{margin:10px 0 6px;font-size:34px;line-height:1;color:#153f56}
+.brand-copy p{margin:0;color:var(--muted);font-size:15px}
+.progress{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:0;
+  padding:18px 28px;
+  background:#fffaf0;
+  border-bottom:1px solid #eee3d2;
+}
+.progress button{position:relative;border:0;background:transparent;color:#8ca0a5;display:flex;flex-direction:column;align-items:center;gap:7px;font-weight:700}
+.progress button:not(:last-child):after{content:"";position:absolute;top:16px;right:58%;width:84%;height:2px;background:#dfe9e6;z-index:0}
+.progress b{position:relative;z-index:1;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#fff;border:2px solid #d8e4e2;color:#8ba0a1}
+.progress .active b{background:var(--turq);border-color:var(--turq);color:white;box-shadow:0 0 0 5px rgba(34,183,178,.12)}
+.progress .done b{background:#e6f7f3;border-color:#8dd6cf;color:#087f83}
+.progress .active span{color:#126c72}
+.panel{padding:34px 44px 18px}
+.panel-title{display:flex;align-items:center;gap:16px;margin-bottom:24px}
+.panel-title>span{width:48px;height:48px;border-radius:15px;background:linear-gradient(135deg,#dff6f2,#fff3d4);display:grid;place-items:center;color:#158c90;font-weight:900}
+.panel-title h2{margin:0 0 4px;font-size:28px}
+.panel-title p{margin:0;color:var(--muted)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+label{display:block;margin:14px 0;font-weight:800;color:#23485a}
+label small{font-weight:500;color:#809298}
+input,textarea,select{display:block;width:100%;margin-top:8px;padding:14px 15px;border:1px solid #d8e5e1;border-radius:14px;background:#fffefa;color:#173e4d;outline:none;transition:.2s}
+input:focus,textarea:focus,select:focus{border-color:#68cfc9;box-shadow:0 0 0 4px rgba(34,183,178,.10)}
+textarea{min-height:110px;resize:vertical}
+.ai-box{padding:18px;border:1px solid #cce8e3;border-radius:20px;background:linear-gradient(135deg,#eaf9f6,#fff7e8)}
+.ai-box h3{margin:0 0 4px}.ai-box p{margin:0 0 12px;color:#648187}
+.prompt{min-height:150px;background:white}
+.soft{border:0;border-radius:12px;background:#d8f3ef;color:#0e7f84;padding:11px 16px;font-weight:900}
+.bank{min-height:220px}
+.bank-note{display:flex;align-items:baseline;gap:8px;color:#7c9296}.bank-note b{font-size:24px;color:#0e8a8f}
+.secret{min-height:90px;font-size:20px;text-align:center}
+.letter-count{display:flex;align-items:center;gap:9px;padding:14px 16px;border-radius:14px;background:#fff5e8;border:1px solid #f0ddc4}
+.letter-count strong{font-size:26px;color:#b06b24}.letter-count em{margin-right:auto;font-style:normal;color:#ad6a2a;font-weight:700}
+.letter-count.exact{background:#e8f8f2;border-color:#b9e5d5}.letter-count.exact strong,.letter-count.exact em{color:#128162}
+.secret-preview{margin-top:18px;min-height:120px;border-radius:20px;background:#f7f0e4;border:1px dashed #dac8a9;display:flex;flex-wrap:wrap;gap:7px;align-items:center;justify-content:center;padding:22px}
+.secret-preview span{width:25px;height:32px;border-bottom:3px solid #1a8d92;display:grid;place-items:center;color:#1b6770;font-weight:900}
+.secret-preview i{width:18px}
+.secret-preview small{color:#8d9997}
+.themes{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.theme{border:1px solid #dae7e2;border-radius:16px;background:#fffefa;padding:16px 10px;color:#355b63;display:grid;place-items:center;gap:8px}
+.theme-dot{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#23b8b2,#f2cf7d);box-shadow:inset 0 0 0 6px rgba(255,255,255,.55)}
+.theme.active{border:2px solid #22a9a6;background:#eaf9f6;color:#0d777a}
+.ready-card{margin-top:24px;padding:22px;border-radius:20px;background:linear-gradient(135deg,#143f53,#0d7f84);color:white;display:flex;align-items:center;justify-content:space-between;gap:18px}
+.ready-card small{color:#c7f4ef;font-weight:900}.ready-card h3{margin:4px 0;font-size:24px}.ready-card p{margin:0;color:#d7efed}
+.launch,.next{border:0;border-radius:14px;padding:14px 24px;background:linear-gradient(180deg,#27c2bc,#118c93);color:#fff;font-weight:900;box-shadow:0 10px 20px rgba(17,140,147,.20)}
+.launch{background:linear-gradient(180deg,#ffe4a7,#d9aa4b);color:#324a4c}
+.wizard-nav{display:flex;justify-content:space-between;align-items:center;padding:20px 44px 32px}
+.back{border:1px solid #cbdeda;background:white;color:#2b6268;border-radius:14px;padding:13px 22px;font-weight:800}
+@media(max-width:720px){
+  .teacher-shell{padding:0}
+  .teacher-card{border-radius:0;min-height:100vh}
+  .brand-head{padding:22px 18px 16px;gap:14px;align-items:flex-start}
+  .brand-logo{width:128px;max-width:36%}
+  .brand-copy h1{font-size:25px}.brand-copy p{font-size:13px}
+  .progress{padding:15px 8px}.progress button span{display:none}.progress button:not(:last-child):after{right:61%;width:78%}
+  .panel{padding:26px 18px 10px}.panel-title h2{font-size:25px}
+  .form-grid{grid-template-columns:1fr}
+  .themes{grid-template-columns:repeat(2,1fr)}
+  .ready-card{flex-direction:column;align-items:stretch}.launch{width:100%}
+  .wizard-nav{padding:18px 18px 28px}
+}
