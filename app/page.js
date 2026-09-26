@@ -98,7 +98,15 @@ export default function Home(){
 
   if(view==="preview"){
     const hiddenSentence=secret
-      ? secret.split("").map((ch,i)=>ch===" "?<i key={i} className="preview-space"/>:<span key={i}>{/[א-ת]/.test(ch)?"•":ch}</span>)
+      ? secret.trim().split(/\s+/).map((word,wi)=>
+          <span className="preview-word" key={wi}>
+            {word.split("").map((ch,ci)=>
+              <span className={/[א-ת]/.test(ch)?"preview-letter":"preview-punctuation"} key={ci}>
+                {/[א-ת]/.test(ch)?"•":ch}
+              </span>
+            )}
+          </span>
+        )
       : <small>משפט המסתורין יוצג כאן</small>;
 
     return <main className="preview-shell">
