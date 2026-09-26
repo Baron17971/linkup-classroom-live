@@ -46,6 +46,7 @@ function publicRoom(room){
     phase:room.phase||"question",
     paused:!!room.paused,
     feedback:room.feedback||"",
+    hintedLetters:room.hintedLetters||[],
     lastAnswer:room.lastAnswer||"",
     nextPlayerName:room.nextPlayerName||""
   };
@@ -80,7 +81,7 @@ export async function GET(req){
     const active=["playing","paused"].includes(room.status);
     const current=active&&players.length?players[(room.currentTurn||0)%players.length]:null;
     const item=active?(room.items||[])[room.progress||0]:null;
-    return Response.json({...publicRoom(room),participant:{id:p.id,name:p.name,joinedAt:p.joinedAt},turn:item&&current?{isMyTurn:current.id===p.id,participantName:current.name,question:current.id===p.id?item.question:null,hint:current.id===p.id?item.hint:null,answerLength:current.id===p.id?item.answer.replace(/\s/g,"").length:0,answerPattern:current.id===p.id?item.answer.split(/(\s+)/).map(x=>/^\s+$/.test(x)?" ":x.length):[],firstLetter:current.id===p.id?item.answer.trim().charAt(0):""}:null});
+    return Response.json({...publicRoom(room),participant:{id:p.id,name:p.name,joinedAt:p.joinedAt},turn:item&&current?{isMyTurn:current.id===p.id,participantName:current.name,question:current.id===p.id?item.question:null,hint:current.id===p.id?item.hint:null,answerLength:current.id===p.id?item.answer.replace(/\s/g,"").length:0,answerPattern:current.id===p.id?item.answer.split(/(\s+)/).map(x=>/^\s+$/.test(x)?" ":x.length):[],hintedLetters:current.id===p.id?(room.hintedLetters||[]):[]}:null});
   }
 
   return Response.json(publicRoom(room));
@@ -110,7 +111,7 @@ export async function POST(req){
     const teacherToken=token();
     const room={
       code,teacherToken,topic,subject,grade,instructions,count,theme,secret,items,
-      status:"lobby",participants:{},progress:0,currentTurn:0,liveAnswer:"",revealedLetters:[],phase:"question",paused:false,feedback:"",lastAnswer:"",nextPlayerName:"",version:0,createdAt:Date.now()
+      status:"lobby",participants:{},progress:0,currentTurn:0,liveAnswer:"",revealedLetters:[],phase:"question",paused:false,feedback:"",hintedLetters:[],lastAnswer:"",nextPlayerName:"",version:0,createdAt:Date.now()
     };
     await save(room);
     return Response.json({code,teacherToken});
@@ -135,7 +136,7 @@ export async function POST(req){
     if(!Object.keys(room.participants||{}).length)return Response.json({error:"אין עדיין תלמידים מחוברים"},{status:409});
     if(!(room.items||[]).length)return Response.json({error:"אין עדיין שאלות במאגר. חזרו לעריכה וטענו את המאגר לפני תחילת המשחק."},{status:409});
     room.status="playing";
-    room.liveAnswer=""; room.phase="question"; room.paused=false; room.feedback=""; room.lastAnswer=""; room.nextPlayerName="";
+    room.liveAnswer=""; room.phase="question"; room.paused=false; room.feedback=""; room.hintedLetters=[]; room.lastAnswer=""; room.nextPlayerName="";
     await save(room);
     return Response.json({
       ...publicRoom(room),
@@ -153,6 +154,19 @@ export async function POST(req){
     return Response.json({ok:true});
   }
 
+  if(action==="letter_hint"){
+    const pid=clean(body.participantId,40);
+    const players=Object.values(room.participants||{}).sort((a,b)=>a.joinedAt-b.joinedAt);
+    const current=players[(room.currentTurn||0)%players.length];
+    const item=(room.items||[])[room.progress||0];
+    if(room.status!=="playing"||room.feedback!=="wrong"||!current||current.id!==pid||!item)return Response.json({error:"hint_unavailable"},{status:409});
+    const chars=item.answer.replace(/\s/g,"").split("");
+    const used=new Set(room.hintedLetters||[]);
+    const available=chars.map((_,i)=>i).filter(i=>!used.has(i));
+    if(available.length)room.hintedLetters=[...used,available[crypto.randomInt(0,available.length)]];
+    await save(room); return Response.json({hintedLetters:room.hintedLetters});
+  }
+
   if(action==="answer"){
     const pid=clean(body.participantId,40);
     const p=room.participants?.[pid];
@@ -167,7 +181,7 @@ export async function POST(req){
     const correct=norm(body.answer)===norm(item.answer);
     if(!correct){room.liveAnswer=clean(body.answer,120);room.feedback="wrong";await save(room);return Response.json({correct:false,hint:item.hint});}
     room.liveAnswer=clean(body.answer,120);
-    room.lastAnswer=item.answer; room.feedback="correct"; room.phase="correct";
+    room.lastAnswer=item.answer; room.feedback="correct"; room.phase="correct"; room.hintedLetters=[];
     const letterCount=(room.secret||"").split("").filter(ch=>/[א-ת]/.test(ch)).length;
     const revealed=new Set(room.revealedLetters||[]);
     const available=Array.from({length:letterCount},(_,i)=>i).filter(i=>!revealed.has(i));
@@ -178,7 +192,7 @@ export async function POST(req){
     room.progress=(room.progress||0)+1;
     room.currentTurn=(room.currentTurn||0)+1;
     if(room.progress>=Math.min(room.count,room.items.length)){room.status="finished";room.phase="finished";room.liveAnswer="";}
-    else {room.phase="transition";room.nextPlayerName=players[room.currentTurn%players.length]?.name||"";}
+    else {room.nextPlayerName=players[room.currentTurn%players.length]?.name||"";}
     await save(room);
     return Response.json({correct:true,progress:room.progress,status:room.status});
   }
@@ -186,7 +200,7 @@ export async function POST(req){
   if(action==="advance"){
     if(!teacherOK(room,body.token))return Response.json({error:"forbidden"},{status:403});
     if(room.status==="finished")return Response.json(publicRoom(room));
-    room.phase="question";room.feedback="";room.liveAnswer="";room.lastAnswer="";room.nextPlayerName="";
+    room.phase="question";room.feedback="";room.liveAnswer="";room.hintedLetters=[];room.lastAnswer="";room.nextPlayerName="";
     await save(room); return Response.json(publicRoom(room));
   }
   if(["skip","next_player","reveal","pause"].includes(action)){
