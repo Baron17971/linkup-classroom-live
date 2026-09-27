@@ -1,6 +1,7 @@
 "use client";
 
 import {useEffect,useMemo,useState} from "react";
+import {flushSync} from "react-dom";
 import {QRCodeSVG} from "qrcode.react";
 
 const steps=[
@@ -23,7 +24,6 @@ const themes=[
 
 export default function Home(){
   const [view,setView]=useState("home");
-  const [leavingHome,setLeavingHome]=useState(false);
   const [step,setStep]=useState(1);
   const [topic,setTopic]=useState("");
   const [subject,setSubject]=useState("");
@@ -101,11 +101,16 @@ export default function Home(){
   }
 
   function openTeacher(){
-    if(leavingHome)return;
-    setLeavingHome(true);
-    setView("teacher");
-    requestAnimationFrame(()=>window.scrollTo({top:0,behavior:"instant"}));
-    window.setTimeout(()=>setLeavingHome(false),520);
+    const showTeacher=()=>{
+      flushSync(()=>setView("teacher"));
+      window.scrollTo({top:0,behavior:"instant"});
+    };
+
+    if(document.startViewTransition){
+      document.startViewTransition(showTeacher);
+    }else{
+      showTeacher();
+    }
   }
 
   function loadBank(){
@@ -327,7 +332,7 @@ export default function Home(){
   }
 
   if(view==="home"){
-    return <main className={"home-screen"+(leavingHome?" home-screen--leaving":"")}>
+    return <main className="home-screen">
       <picture className="home-picture">
         <source media="(max-width:720px)" srcSet="/home-mobile.png.png"/>
         <img src="/home-desktop.png.png" alt="LinkUp — כולנו חלק מהשרשרת" className="home-art"/>
@@ -339,14 +344,7 @@ export default function Home(){
     </main>;
   }
 
-  return <main className={"teacher-shell"+(leavingHome?" teacher-shell--under-home":" teacher-shell--enter")}>
-    {leavingHome&&<div className="home-transition-overlay" aria-hidden="true">
-      <picture className="home-picture">
-        <source media="(max-width:720px)" srcSet="/home-mobile.png.png"/>
-        <img src="/home-desktop.png.png" alt="" className="home-art"/>
-      </picture>
-      <div className="home-credit">פותח ע"י ענת ברון־לוביש · כל הזכויות שמורות</div>
-    </div>}
+  return <main className="teacher-shell">
     <section className="teacher-card">
       <header className="brand-head">
         <img src="/linkup-logo2.png" alt="LinkUp — כולנו חלק מהשרשרת" className="brand-logo"/>
