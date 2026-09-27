@@ -19,15 +19,41 @@ button{cursor:pointer}
 .home-screen{position:fixed;inset:0;overflow:hidden;background:#dff4f3}
 .home-picture,.home-art{display:block;width:100%;height:100%}
 .home-art{object-fit:cover;object-position:center}
+.home-transition-logo{
+  position:absolute;
+  z-index:2;
+  top:7%;
+  left:50%;
+  width:min(360px,32vw);
+  height:auto;
+  transform:translateX(-50%);
+  opacity:.001;
+  pointer-events:none;
+  view-transition-name:linkup-logo;
+}
+.shared-linkup-logo{
+  view-transition-name:linkup-logo;
+}
+::view-transition-group(linkup-logo){
+  animation-duration:340ms;
+  animation-timing-function:cubic-bezier(.22,.61,.36,1);
+}
+::view-transition-old(linkup-logo),
+::view-transition-new(linkup-logo){
+  mix-blend-mode:normal;
+  animation-duration:340ms;
+}
+::view-transition-old(root){
+  animation:linkupViewOut 180ms cubic-bezier(.4,0,1,1) both;
+}
+::view-transition-new(root){
+  animation:linkupViewIn 280ms cubic-bezier(0,0,.2,1) 40ms both;
+}
+
 
 /* Browser-native snapshot transition: old view fades out while the
    already-rendered teacher view fades in. No intermediate DOM layer. */
-::view-transition-old(root){
-  animation:linkupViewOut 220ms cubic-bezier(.4,0,1,1) both;
-}
-::view-transition-new(root){
-  animation:linkupViewIn 300ms cubic-bezier(0,0,.2,1) both;
-}
+
 @keyframes linkupViewOut{
   from{opacity:1}
   to{opacity:0}
