@@ -103,11 +103,9 @@ export default function Home(){
   function openTeacher(){
     if(leavingHome)return;
     setLeavingHome(true);
-    window.setTimeout(()=>{
-      setView("teacher");
-      setLeavingHome(false);
-      requestAnimationFrame(()=>window.scrollTo({top:0,behavior:"instant"}));
-    },340);
+    setView("teacher");
+    requestAnimationFrame(()=>window.scrollTo({top:0,behavior:"instant"}));
+    window.setTimeout(()=>setLeavingHome(false),520);
   }
 
   function loadBank(){
@@ -342,6 +340,13 @@ export default function Home(){
   }
 
   return <main className="teacher-shell teacher-shell--enter">
+    {leavingHome&&<div className="home-transition-overlay" aria-hidden="true">
+      <picture className="home-picture">
+        <source media="(max-width:720px)" srcSet="/home-mobile.png.png"/>
+        <img src="/home-desktop.png.png" alt="" className="home-art"/>
+      </picture>
+      <div className="home-credit">פותח ע"י ענת ברון־לוביש · כל הזכויות שמורות</div>
+    </div>}
     <section className="teacher-card">
       <header className="brand-head">
         <img src="/linkup-logo2.png" alt="LinkUp — כולנו חלק מהשרשרת" className="brand-logo"/>
