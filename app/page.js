@@ -339,7 +339,7 @@ export default function Home(){
     </main>;
   }
 
-  return <main className="teacher-shell teacher-shell--enter">
+  return <main className={"teacher-shell"+(leavingHome?" teacher-shell--under-home":" teacher-shell--enter")}>
     {leavingHome&&<div className="home-transition-overlay" aria-hidden="true">
       <picture className="home-picture">
         <source media="(max-width:720px)" srcSet="/home-mobile.png.png"/>
