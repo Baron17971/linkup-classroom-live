@@ -333,6 +333,7 @@ export default function Home(){
 
   if(view==="home"){
     return <main className="home-screen">
+      <img src="/linkup-logo2.png" alt="" className="home-transition-logo" aria-hidden="true"/>
       <picture className="home-picture">
         <source media="(max-width:720px)" srcSet="/home-mobile.png.png"/>
         <img src="/home-desktop.png.png" alt="LinkUp — כולנו חלק מהשרשרת" className="home-art"/>
@@ -347,7 +348,7 @@ export default function Home(){
   return <main className="teacher-shell">
     <section className="teacher-card">
       <header className="brand-head">
-        <img src="/linkup-logo2.png" alt="LinkUp — כולנו חלק מהשרשרת" className="brand-logo"/>
+        <img src="/linkup-logo2.png" alt="LinkUp — כולנו חלק מהשרשרת" className="brand-logo shared-linkup-logo"/>
         <div className="brand-copy">
           <span>צד המורה</span>
           <h1>יצירת משחק חדש</h1>
