@@ -52,8 +52,7 @@ button{cursor:pointer}
   animation:homeCreditOut .26s ease both;
 }
 @keyframes homeOverlayOut{
-  0%{opacity:1}
-  58%{opacity:.98}
+  0%,18%{opacity:1}
   100%{opacity:0}
 }
 @keyframes homeArtworkOut{
@@ -90,11 +89,17 @@ button{cursor:pointer}
     radial-gradient(circle at 92% 16%,rgba(215,169,75,.10),transparent 20%),
     linear-gradient(180deg,#fffdf8 0%,#f6efe2 100%);
 }
+.teacher-shell--under-home,
+.teacher-shell--under-home .teacher-card{
+  opacity:1!important;
+  transform:none!important;
+  animation:none!important;
+}
 .teacher-shell--enter{
-  animation:activityEnter .46s cubic-bezier(.22,.61,.36,1) both;
+  animation:activityEnter .34s cubic-bezier(.22,.61,.36,1) both;
 }
 .teacher-shell--enter .teacher-card{
-  animation:activityCardEnter .5s cubic-bezier(.22,.61,.36,1) .03s both;
+  animation:activityCardEnter .38s cubic-bezier(.22,.61,.36,1) .01s both;
 }
 @keyframes activityEnter{
   from{opacity:0}
