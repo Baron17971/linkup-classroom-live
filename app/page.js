@@ -23,6 +23,7 @@ const themes=[
 
 export default function Home(){
   const [view,setView]=useState("home");
+  const [leavingHome,setLeavingHome]=useState(false);
   const [step,setStep]=useState(1);
   const [topic,setTopic]=useState("");
   const [subject,setSubject]=useState("");
@@ -100,8 +101,13 @@ export default function Home(){
   }
 
   function openTeacher(){
-    setView("teacher");
-    requestAnimationFrame(()=>window.scrollTo({top:0,behavior:"instant"}));
+    if(leavingHome)return;
+    setLeavingHome(true);
+    window.setTimeout(()=>{
+      setView("teacher");
+      setLeavingHome(false);
+      requestAnimationFrame(()=>window.scrollTo({top:0,behavior:"instant"}));
+    },340);
   }
 
   function loadBank(){
@@ -323,7 +329,7 @@ export default function Home(){
   }
 
   if(view==="home"){
-    return <main className="home-screen">
+    return <main className={"home-screen"+(leavingHome?" home-screen--leaving":"")}>
       <picture className="home-picture">
         <source media="(max-width:720px)" srcSet="/home-mobile.png.png"/>
         <img src="/home-desktop.png.png" alt="LinkUp — כולנו חלק מהשרשרת" className="home-art"/>
@@ -335,7 +341,7 @@ export default function Home(){
     </main>;
   }
 
-  return <main className="teacher-shell">
+  return <main className="teacher-shell teacher-shell--enter">
     <section className="teacher-card">
       <header className="brand-head">
         <img src="/linkup-logo2.png" alt="LinkUp — כולנו חלק מהשרשרת" className="brand-logo"/>
