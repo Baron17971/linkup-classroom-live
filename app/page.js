@@ -348,8 +348,10 @@ export default function Home(){
   return <main className="teacher-shell">
     <section className="teacher-card">
       <header className="brand-head">
-        <img src="/linkup-logo2.png" alt="LinkUp — כולנו חלק מהשרשרת" className="brand-logo shared-linkup-logo"/>
-        <img src="/linkup-hero-desktop.png" alt="LinkUp — כולנו חלק מהשרשרת" className="brand-hero-desktop"/>
+        <picture className="brand-responsive">
+          <source media="(min-width:721px)" srcSet="/linkup-hero-desktop.png"/>
+          <img src="/linkup-logo2.png" alt="LinkUp — כולנו חלק מהשרשרת" className="brand-responsive-image shared-linkup-logo"/>
+        </picture>
         <div className="brand-copy">
           <span>צד המורה</span>
           <h1>יצירת משחק חדש</h1>
