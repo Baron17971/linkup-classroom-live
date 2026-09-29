@@ -822,29 +822,31 @@ textarea{min-height:110px;resize:vertical}
 
 
 
-/* Responsive teacher branding: logo on mobile, hero on desktop */
-.brand-hero-desktop{
+
+
+/* Responsive teacher branding: one asset only */
+.brand-responsive{
   display:block;
   width:100%;
-  height:auto;
-  object-fit:cover;
-  object-position:center;
 }
-@media(max-width:720px){
-  .brand-hero-desktop{display:none}
-  .brand-logo{display:block}
+.brand-responsive-image{
+  display:block;
+  width:min(360px,72%);
+  height:auto;
+  object-fit:contain;
+  margin:0 auto -2px;
 }
 @media(min-width:721px){
-  .brand-logo{display:none}
-  .brand-hero-desktop{
-    display:block;
+  .brand-responsive{
+    width:calc(100% + 72px);
+    margin:-20px -36px 4px;
+  }
+  .brand-responsive-image{
     width:100%;
+    height:auto;
     max-height:260px;
     object-fit:cover;
     object-position:center;
-    margin:-20px -36px 4px;
-  }
-  .brand-head{
-    padding-top:20px;
+    margin:0;
   }
 }
