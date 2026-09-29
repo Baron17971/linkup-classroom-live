@@ -335,8 +335,8 @@ export default function Home(){
     return <main className="home-screen">
       <img src="/linkup-logo2.png" alt="" className="home-transition-logo" aria-hidden="true"/>
       <picture className="home-picture">
-        <source media="(max-width:720px)" srcSet="/home-mobile.png.png"/>
-        <img src="/home-desktop.png.png" alt="LinkUp — כולנו חלק מהשרשרת" className="home-art"/>
+        <source media="(max-width:720px)" srcSet="/linkup-home-mobile.png"/>
+        <img src="/linkup-home-desktop.png" alt="LinkUp — כולנו חלק מהשרשרת" className="home-art"/>
       </picture>
       <button className="home-teacher-hotspot" onClick={openTeacher} aria-label="כניסת מורה">
         <span className="sr-only">כניסת מורה</span>
