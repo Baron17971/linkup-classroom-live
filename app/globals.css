@@ -818,3 +818,39 @@ textarea{min-height:110px;resize:vertical}
 @media(max-width:720px){
   .chain-reward-image{width:min(300px,68vw);transform:none}
 }
+
+
+/* Trial: LinkUp hero atmosphere behind the existing logo */
+.brand-head{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  background:#eef8f5;
+}
+.brand-head::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-2;
+  background:url("/linkup-hero-desktop.png") center center/cover no-repeat;
+}
+.brand-head::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  background:linear-gradient(180deg,rgba(244,252,249,.78) 0%,rgba(255,253,248,.90) 100%);
+}
+.brand-head .brand-logo,
+.brand-head .brand-copy{
+  position:relative;
+  z-index:1;
+}
+@media(max-width:720px){
+  .brand-head::before{
+    background-position:center center;
+  }
+  .brand-head::after{
+    background:linear-gradient(180deg,rgba(244,252,249,.74) 0%,rgba(255,253,248,.92) 100%);
+  }
+}
