@@ -26,6 +26,12 @@ async function freshCode(){
   throw new Error("code");
 }
 function teacherOK(room,t){return !!t&&t===room.teacherToken}
+function studentOK(p,t){return !!p && (!p.playerToken || (!!t && t===p.playerToken))}
+function sameName(a,b){return String(a||"").trim().toLocaleLowerCase("he-IL")===String(b||"").trim().toLocaleLowerCase("he-IL")}
+function uniqueDisplayName(participants,rawName){
+  const same=Object.values(participants||{}).filter(p=>sameName(p.rawName||p.name,rawName)).length;
+  return same===0?rawName:`${rawName} (${same+1})`;
+}
 function publicRoom(room){
   return {
     code:room.code,
@@ -76,7 +82,9 @@ export async function GET(req){
   if(role==="student"){
     const pid=u.searchParams.get("participantId");
     const p=room.participants?.[pid];
+    const playerToken=u.searchParams.get("playerToken")||"";
     if(!p)return Response.json({error:"student_not_found"},{status:404});
+    if(!studentOK(p,playerToken))return Response.json({error:"forbidden"},{status:403});
     const players=Object.values(room.participants||{}).sort((a,b)=>a.joinedAt-b.joinedAt);
     const active=["playing","paused"].includes(room.status);
     const current=active&&players.length?players[(room.currentTurn||0)%players.length]:null;
@@ -126,9 +134,11 @@ export async function POST(req){
     const name=clean(body.name,50);
     if(!name)return Response.json({error:"name"},{status:400});
     const id=token().slice(0,16);
-    room.participants[id]={id,name,joinedAt:Date.now()};
+    const playerToken=token();
+    const displayName=uniqueDisplayName(room.participants,name);
+    room.participants[id]={id,name:displayName,rawName:name,playerToken,joinedAt:Date.now()};
     await save(room);
-    return Response.json({participantId:id});
+    return Response.json({participantId:id,playerToken,displayName});
   }
 
   if(action==="start"){
@@ -146,6 +156,9 @@ export async function POST(req){
 
   if(action==="typing"){
     const pid=clean(body.participantId,40);
+    const actor=room.participants?.[pid];
+    if(!actor)return Response.json({error:"student_not_found"},{status:404});
+    if(!studentOK(actor,body.playerToken))return Response.json({error:"forbidden"},{status:403});
     const players=Object.values(room.participants||{}).sort((a,b)=>a.joinedAt-b.joinedAt);
     const current=players[(room.currentTurn||0)%players.length];
     if(room.status!=="playing"||!current||current.id!==pid)return Response.json({error:"not_your_turn"},{status:409});
@@ -156,6 +169,9 @@ export async function POST(req){
 
   if(action==="letter_hint"){
     const pid=clean(body.participantId,40);
+    const actor=room.participants?.[pid];
+    if(!actor)return Response.json({error:"student_not_found"},{status:404});
+    if(!studentOK(actor,body.playerToken))return Response.json({error:"forbidden"},{status:403});
     const players=Object.values(room.participants||{}).sort((a,b)=>a.joinedAt-b.joinedAt);
     const current=players[(room.currentTurn||0)%players.length];
     const item=(room.items||[])[room.progress||0];
@@ -171,6 +187,7 @@ export async function POST(req){
     const pid=clean(body.participantId,40);
     const p=room.participants?.[pid];
     if(!p)return Response.json({error:"student_not_found"},{status:404});
+    if(!studentOK(p,body.playerToken))return Response.json({error:"forbidden"},{status:403});
     if(room.status!=="playing")return Response.json({error:"not_playing"},{status:409});
     const players=Object.values(room.participants||{}).sort((a,b)=>a.joinedAt-b.joinedAt);
     const current=players[(room.currentTurn||0)%players.length];
