@@ -1,11 +1,14 @@
 "use client";
 
 import {useEffect,useState} from "react";
-import {useParams} from "next/navigation";
+import {useParams,useSearchParams} from "next/navigation";
 
 export default function JoinRoom(){
   const params=useParams();
+  const search=useSearchParams();
   const code=String(params.code||"");
+  const preview=search.get("preview")==="1";
+  const previewToken=search.get("token")||"";
   const [name,setName]=useState("");
   const [participantId,setParticipantId]=useState("");
   const [playerToken,setPlayerToken]=useState("");
@@ -18,24 +21,24 @@ export default function JoinRoom(){
   const [hintMode,setHintMode]=useState("");
 
   useEffect(()=>{
+    if(preview)return;
     try{
       const saved=localStorage.getItem("linkupPlayer:"+code);
       if(saved){const x=JSON.parse(saved);if(x?.participantId){setParticipantId(x.participantId);setPlayerToken(x.playerToken||"");return}}
       const legacy=localStorage.getItem("linkupPid:"+code);if(legacy)setParticipantId(legacy);
     }catch{}
-  },[code]);
+  },[code,preview]);
 
   useEffect(()=>{
-    if(!participantId)return;
+    if(!preview&&!participantId)return;
     let alive=true;
     async function load(){
       try{
-        const r=await fetch(`/api/game?code=${code}&role=student&participantId=${participantId}&playerToken=${encodeURIComponent(playerToken)}`,{cache:"no-store"});
+        const url=preview?`/api/game?code=${code}&role=preview&token=${encodeURIComponent(previewToken)}`:`/api/game?code=${code}&role=student&participantId=${participantId}&playerToken=${encodeURIComponent(playerToken)}`;
+        const r=await fetch(url,{cache:"no-store"});
         const d=await r.json();
         if(r.status===404||r.status===403){
-          localStorage.removeItem("linkupPid:"+code);
-          localStorage.removeItem("linkupPlayer:"+code);
-          if(alive){setParticipantId("");setPlayerToken("");}
+          if(!preview){localStorage.removeItem("linkupPid:"+code);localStorage.removeItem("linkupPlayer:"+code);if(alive){setParticipantId("");setPlayerToken("");}}
           return;
         }
         if(!r.ok)throw new Error(d.error||"שגיאה");
@@ -45,10 +48,10 @@ export default function JoinRoom(){
     load();
     const timer=setInterval(load,1000);
     return()=>{alive=false;clearInterval(timer)};
-  },[participantId,playerToken,code]);
+  },[preview,previewToken,participantId,playerToken,code]);
 
   async function join(){
-    if(!name.trim()||joining)return;
+    if(preview||!name.trim()||joining)return;
     setJoining(true);setError("");
     try{
       const r=await fetch("/api/game",{
@@ -67,10 +70,12 @@ export default function JoinRoom(){
   }
 
   async function pushTyping(value){
+    if(preview)return;
     try{await fetch("/api/game",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"typing",code,participantId,playerToken,answer:value})})}catch{}
   }
 
   async function revealLetterHint(){
+    if(preview)return;
     setHintMode("letter");
     try{
       const r=await fetch("/api/game",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"letter_hint",code,participantId,playerToken})});
@@ -80,6 +85,7 @@ export default function JoinRoom(){
   }
 
   async function submitAnswer(){
+    if(preview)return;
     if(!answer.trim()||!room?.turn?.isMyTurn)return;
     try{
       const r=await fetch("/api/game",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"answer",code,participantId,playerToken,answer})});
@@ -90,7 +96,7 @@ export default function JoinRoom(){
     }catch(e){setError(e.message)}
   }
 
-  if(participantId){
+  if(preview||participantId){
     const playing=room?.status==="playing";
     const paused=room?.status==="paused";
     const finished=room?.status==="finished";
@@ -98,6 +104,7 @@ export default function JoinRoom(){
     return <main className="student-join-shell">
       <section className="student-join-card waiting-card">
         <img src="/linkup-logo2.png" alt="LinkUp" className="student-join-logo"/>
+        {preview&&<div className="student-join-kicker">תצוגת מורה בלבד — לא נשמרים תשובות או התקדמות</div>}
         {!playing&&!finished&&<><div className="waiting-dot">✓</div><h1>התחברת למשחק</h1><p><b>{room?.participant?.name||name}</b>, מחכים שהמורה יתחיל את השרשרת.</p></>}
         {paused&&<><div className="waiting-dot">Ⅱ</div><h1>המשחק בהשהיה</h1><p>המורה יחזיר את המשחק בעוד רגע.</p></>}
         {playing&&room?.phase==="transition"&&<><div className="waiting-dot">⛓</div><h1>החוליה נפתחה!</h1><p>הבא/ה בתור: <b>{room?.nextPlayerName}</b></p></>}
