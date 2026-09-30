@@ -8,6 +8,7 @@ export default function JoinRoom(){
   const code=String(params.code||"");
   const [name,setName]=useState("");
   const [participantId,setParticipantId]=useState("");
+  const [playerToken,setPlayerToken]=useState("");
   const [room,setRoom]=useState(null);
   const [joining,setJoining]=useState(false);
   const [error,setError]=useState("");
@@ -17,8 +18,11 @@ export default function JoinRoom(){
   const [hintMode,setHintMode]=useState("");
 
   useEffect(()=>{
-    const saved=localStorage.getItem("linkupPid:"+code);
-    if(saved)setParticipantId(saved);
+    try{
+      const saved=localStorage.getItem("linkupPlayer:"+code);
+      if(saved){const x=JSON.parse(saved);if(x?.participantId){setParticipantId(x.participantId);setPlayerToken(x.playerToken||"");return}}
+      const legacy=localStorage.getItem("linkupPid:"+code);if(legacy)setParticipantId(legacy);
+    }catch{}
   },[code]);
 
   useEffect(()=>{
@@ -26,11 +30,12 @@ export default function JoinRoom(){
     let alive=true;
     async function load(){
       try{
-        const r=await fetch(`/api/game?code=${code}&role=student&participantId=${participantId}`,{cache:"no-store"});
+        const r=await fetch(`/api/game?code=${code}&role=student&participantId=${participantId}&playerToken=${encodeURIComponent(playerToken)}`,{cache:"no-store"});
         const d=await r.json();
-        if(r.status===404){
+        if(r.status===404||r.status===403){
           localStorage.removeItem("linkupPid:"+code);
-          if(alive)setParticipantId("");
+          localStorage.removeItem("linkupPlayer:"+code);
+          if(alive){setParticipantId("");setPlayerToken("");}
           return;
         }
         if(!r.ok)throw new Error(d.error||"שגיאה");
@@ -40,7 +45,7 @@ export default function JoinRoom(){
     load();
     const timer=setInterval(load,1000);
     return()=>{alive=false;clearInterval(timer)};
-  },[participantId,code]);
+  },[participantId,playerToken,code]);
 
   async function join(){
     if(!name.trim()||joining)return;
@@ -53,20 +58,22 @@ export default function JoinRoom(){
       });
       const d=await r.json();
       if(!r.ok)throw new Error(d.error==="not_found"?"החדר לא נמצא":d.error||"לא ניתן להצטרף");
-      localStorage.setItem("linkupPid:"+code,d.participantId);
+      localStorage.setItem("linkupPlayer:"+code,JSON.stringify({participantId:d.participantId,playerToken:d.playerToken,displayName:d.displayName}));
+      localStorage.removeItem("linkupPid:"+code);
+      setPlayerToken(d.playerToken||"");
       setParticipantId(d.participantId);
     }catch(e){setError(e.message)}
     finally{setJoining(false)}
   }
 
   async function pushTyping(value){
-    try{await fetch("/api/game",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"typing",code,participantId,answer:value})})}catch{}
+    try{await fetch("/api/game",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"typing",code,participantId,playerToken,answer:value})})}catch{}
   }
 
   async function revealLetterHint(){
     setHintMode("letter");
     try{
-      const r=await fetch("/api/game",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"letter_hint",code,participantId})});
+      const r=await fetch("/api/game",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"letter_hint",code,participantId,playerToken})});
       const d=await r.json(); if(!r.ok)throw new Error(d.error||"שגיאה");
       setRoom(prev=>prev?{...prev,hintedLetters:d.hintedLetters,turn:{...prev.turn,hintedLetters:d.hintedLetters}}:prev);
     }catch(e){setError(e.message)}
@@ -75,7 +82,7 @@ export default function JoinRoom(){
   async function submitAnswer(){
     if(!answer.trim()||!room?.turn?.isMyTurn)return;
     try{
-      const r=await fetch("/api/game",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"answer",code,participantId,answer})});
+      const r=await fetch("/api/game",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"answer",code,participantId,playerToken,answer})});
       const d=await r.json();
       if(!r.ok)throw new Error(d.error||"שגיאה");
       if(d.correct){setFeedback("נכון! החוליה נפתחה ✓");setAnswer("");setShowHint(false)}
