@@ -6,7 +6,7 @@ import {QRCodeSVG} from "qrcode.react";
 import {xsiteCore} from "./lib/xsiteCore";
 
 const steps=[
-  {n:1,label:"פרטי המשחק"},
+  {n:1,label:"פרטי הפעילות"},
   {n:2,label:"מאגר שאלות"},
   {n:3,label:"משפט המסתורין"},
   {n:4,label:"עיצוב והפעלה"}
@@ -249,8 +249,32 @@ export default function Home(){
     setBankLoaded(items.length>0);
   }
 
+  async function saveToLibrary(){
+    setSavingLibrary(true);setRoomError("");
+    try{
+      const {data:sessionData}=await xsiteCore.auth.getSession();
+      const user=sessionData.session?.user||coreUser;
+      if(!user){setSavingLibrary(false);await openTeacher();return;}
+      if(!subject.trim()||!topic.trim()||!grade.trim()){setRoomError("יש להשלים מקצוע, נושא וכיתה לפני שמירה בארכיון.");return;}
+      if(!items.length){setRoomError("יש לטעון מאגר שאלות לפני שמירה בארכיון.");return;}
+      const payload={topic,subject,grade,instructions,count,theme,secret,items};
+      if(libraryProjectId){
+        const {error}=await xsiteCore.from("teacher_projects").update({title:topic,subject:subject.trim(),payload})
+          .eq("id",libraryProjectId).eq("app_id","linkup").eq("teacher_id",user.id);
+        if(error)throw error;
+      }else{
+        const {data,error}=await xsiteCore.from("teacher_projects")
+          .insert({teacher_id:user.id,app_id:"linkup",title:topic,subject:subject.trim(),payload}).select("id").single();
+        if(error)throw error;setLibraryProjectId(data.id);
+      }
+      setLibrarySaved(true);
+    }catch(e){setRoomError("שמירת הפעילות בארכיון MyXsite נכשלה.");}
+    finally{setSavingLibrary(false);}
+  }
+
   async function createRoom(){
     if(creatingRoom)return;
+    if(!subject.trim()||!topic.trim()||!grade.trim()){setRoomError("יש להשלים מקצוע, נושא וכיתה לפני פתיחת הפעילות.");setView("teacher");setStep(1);return;}
     setCreatingRoom(true);
     setRoomError("");
     try{
@@ -268,6 +292,7 @@ export default function Home(){
       if(!r.ok)throw new Error(d.error||"לא ניתן לפתוח חדר");
       setRoomCode(d.code);
       setTeacherToken(d.teacherToken);
+      try{localStorage.setItem("linkupLive:"+d.code,JSON.stringify({teacherToken:d.teacherToken,code:d.code,updatedAt:Date.now()}));}catch{}
       setLobbyRoom(null);
       setView("lobby");
     }catch(e){
@@ -337,6 +362,29 @@ export default function Home(){
     </main>;
   }
 
+  if(view==="teacherEntry"){
+    const hasDraft=!!(topic||bank||items.length);
+    return <main className="teacher-shell"><section className="teacher-card">
+      <header className="brand-head">
+        <picture className="brand-responsive"><source media="(min-width:721px)" srcSet="/linkup-hero-desktop.png"/><img src="/linkup-logo2.png" alt="LinkUp — כולנו חלק מהשרשרת" className="brand-responsive-image shared-linkup-logo"/></picture>
+        <div className="brand-copy"><span>צד המורה</span><h1>LinkUp</h1><p>צור פעילות חדשה, טען פעילות קיימת או חזור לכיתה לפי קוד.</p></div>
+      </header>
+      <section className="panel">
+        <div className="lobby-actions">
+          {hasDraft&&<button className="next" onClick={()=>{setView("teacher");setStep(1)}}>המשך טיוטה</button>}
+          <button className="next" onClick={startNewActivity}>צור פעילות חדשה</button>
+          <button className="back" onClick={loadSavedProjects}>טען פעילות קיימת</button>
+          <button className="back" onClick={()=>{setCodePanel(true);setLoadPanel(false);setRoomError("")}}>פתח באמצעות קוד</button>
+        </div>
+        {loadPanel&&<div className="ai-box"><h3>פעילויות שמורות</h3>{savedProjects.length?
+          <select defaultValue="" onChange={e=>e.target.value&&(window.location.href="/?edit="+encodeURIComponent(e.target.value))}><option value="">בחר פעילות</option>{savedProjects.map(x=><option value={x.id} key={x.id}>{x.title||"LinkUp"}</option>)}</select>
+          :<p>אין עדיין פעילויות שמורות.</p>}</div>}
+        {codePanel&&<div className="ai-box"><h3>פתיחה לפי קוד</h3><div className="form-grid"><input inputMode="numeric" maxLength={6} value={existingCode} onChange={e=>setExistingCode(e.target.value)} placeholder="לדוגמה: 482731"/><button className="next" onClick={openExistingByCode}>פתח פעילות</button></div></div>}
+        {roomError&&<div className="room-error">{roomError}</div>}
+      </section>
+    </section></main>;
+  }
+
   if(view==="preview"){
     const hiddenSentence=secret
       ? secret.trim().split(/\s+/).map((word,wi)=>
@@ -397,7 +445,7 @@ export default function Home(){
           <span>קישור לתלמידים</span>
           <div className="student-link-row">
             <input readOnly value={studentLink}/>
-            <button className="copy-link" onClick={async()=>{await navigator.clipboard.writeText(studentLink);setCopied(true);setTimeout(()=>setCopied(false),1800)}}>{copied?"הועתק ✓":"העתקת קישור"}</button>
+            <button className="copy-link" onClick={async()=>{await navigator.clipboard.writeText(studentLink);setCopied(true);setTimeout(()=>setCopied(false),1800)}}>{copied?"הועתק ✓":"העתק קישור תלמיד"}</button>
           </div>
         </div>
 
@@ -416,7 +464,9 @@ export default function Home(){
         {roomError&&<div className="room-error">{roomError}</div>}
 
         <div className="lobby-actions">
-          <button className="projector-button" onClick={()=>setProjector(true)}>מצב מקרן</button>
+          <button className="projector-button" onClick={()=>setProjector(true)}>פתח מקרן</button>
+          <button className="back" onClick={async()=>{await navigator.clipboard.writeText(roomCode);setCopied(true);setTimeout(()=>setCopied(false),1200)}}>{copied?"הועתק ✓":"העתק קוד"}</button>
+          <button className="back" onClick={()=>window.open("/join/"+roomCode+"?preview=1&token="+encodeURIComponent(teacherToken),"_blank","noopener")}>צפה כתלמיד</button>
           {["playing","paused"].includes(lobbyRoom?.status)&&<div className="teacher-live-controls">
             <button onClick={()=>teacherAction("skip")}>דלג על שאלה</button>
             <button onClick={()=>teacherAction("next_player")}>העבר תור</button>
@@ -453,7 +503,7 @@ export default function Home(){
         </picture>
         <div className="brand-copy">
           <span>צד המורה</span>
-          <h1>יצירת משחק חדש</h1>
+          <h1>LinkUp — מורה</h1>
           <p>בונים שרשרת ידע כיתתית שבה כל תלמיד פותח את החוליה הבאה.</p>
         </div>
       </header>
@@ -465,17 +515,16 @@ export default function Home(){
       </nav>
 
       {step===1&&<section className="panel">
-        <div className="panel-title"><span>01</span><div><h2>פרטי המשחק</h2><p>הגדירו את נושא הפעילות ואת גודל השרשרת.</p></div></div>
+        <div className="panel-title"><span>01</span><div><h2>פרטי הפעילות</h2><p>הגדירו מקצוע, נושא וכיתה.</p></div></div>
         <div className="form-grid">
-          <label>נושא המשחק<input value={topic} onChange={e=>setTopic(e.target.value)} placeholder="לדוגמה: מערכת הנשימה"/></label>
-          <label>מקצוע<input value={subject} onChange={e=>setSubject(e.target.value)} placeholder="לדוגמה: ביולוגיה"/></label>
-          <label>כיתה<input value={grade} onChange={e=>setGrade(e.target.value)} placeholder="לדוגמה: י׳"/></label>
-          <label>מספר חוליות
-            <select value={count} onChange={e=>setCount(Number(e.target.value))}>
-              {[20,25,30,35,40].map(n=><option key={n} value={n}>{n} שאלות</option>)}
-            </select>
-          </label>
+          <label>מקצוע<select value={subject} onChange={e=>setSubject(e.target.value)}><option value="">בחרו מקצוע</option>{subjectSuggestions.map(x=><option key={x}>{x}</option>)}</select></label>
+          <label>נושא<input value={topic} onChange={e=>setTopic(e.target.value)} placeholder="לדוגמה: מערכת הנשימה"/></label>
+          <label>כיתה<select value={grade} onChange={e=>setGrade(e.target.value)}><option value="">בחרו כיתה</option>{gradeOptions.map(x=><option key={x}>{x}</option>)}</select></label>
         </div>
+        <h3>הגדרות משחק</h3>
+        <div className="form-grid"><label>מספר חוליות
+          <select value={count} onChange={e=>setCount(Number(e.target.value))}>{[20,25,30,35,40].map(n=><option key={n} value={n}>{n} שאלות</option>)}</select>
+        </label></div>
         <label>הוראות לתלמידים <small>(אופציונלי)</small>
           <textarea value={instructions} onChange={e=>setInstructions(e.target.value)} placeholder="לדוגמה: ענו על השאלה כדי לפתוח את החוליה הבאה בשרשרת."/>
         </label>
@@ -492,12 +541,14 @@ export default function Home(){
           <textarea className="bank" value={bank} onChange={e=>{setBank(e.target.value);setBankLoaded(false)}} placeholder={"שאלה | תשובה | רמז\nבאיזה אברון מתרחשת הנשימה התאית? | מיטוכונדריה | מכונה תחנת הכוח של התא"}/>
         </label>
         <div className="bank-actions">
-          <button className="load-bank" onClick={loadBank}>טעינת המאגר</button>
+          <button className="load-bank" onClick={loadBank}>טען למאגר</button>
+          <button className="soft" onClick={()=>{const ex=Array.from({length:count},(_,i)=>sampleBank[i%sampleBank.length]);setBank(ex.map(x=>x.join(" | ")).join("\n"));setItems(ex.map((x,i)=>({id:i+1,question:x[0],answer:x[1],hint:x[2]})));setBankLoaded(true);setEditorOpen(false);setRoomError("")}}>טען דוגמה</button>
           <div className="bank-note"><b>{bank.split(/\r?\n/).filter(Boolean).length}</b><span>שורות במאגר</span></div>
         </div>
         {bankLoaded&&<>
-          <div className="bank-loaded">✓ המאגר נטען בהצלחה · נפתח אזור עריכת הפריטים</div>
-          <div className="items-editor" id="items-editor">
+          <div className="bank-loaded">✓ המאגר נטען בהצלחה · {items.length} פריטים</div>
+          <button className="soft" onClick={()=>setEditorOpen(v=>!v)}>{editorOpen?"סגור עריכה":"ערוך מושגים"}</button>
+          {editorOpen&&<div className="items-editor" id="items-editor">
             <div className="items-editor-head">
               <div>
                 <h3>עריכת הפריטים</h3>
@@ -522,8 +573,8 @@ export default function Home(){
                 <button className="remove-item" onClick={()=>removeItem(item.id)}>מחק פריט</button>
               </article>)}
             </div>
-            <button className="save-items" onClick={syncBank}>שמירת השינויים במאגר</button>
-          </div>
+            <button className="save-items" onClick={()=>{syncBank();setEditorOpen(false)}}>שמור שינויים</button>
+          </div>}
         </>}
       </section>}
 
@@ -555,6 +606,8 @@ export default function Home(){
           </button>)}
         </div>
         <div className="theme-selection-note">העיצוב שבחרתם יוצג במסך המקרן. בשלב הבא תוכלו לראות תצוגה מקדימה מלאה.</div>
+        <div className="bank-actions"><button className="soft" disabled={savingLibrary} onClick={saveToLibrary}>{savingLibrary?"שומר…":librarySaved?"עדכן בארכיון":"העבר לארכיון"}</button></div>
+        {roomError&&<div className="room-error">{roomError}</div>}
       </section>}
 
       <footer className="wizard-nav">
