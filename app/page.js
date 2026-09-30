@@ -140,8 +140,11 @@ export default function Home(){
 צור ${count} שאלות קצרות למשחק כיתתי.
 לכל שאלה צור תשובה נכונה אחת ורמז מילולי קצר שעוזר להגיע לתשובה אך אינו כולל אותה.
 הימנע מכפילויות ושמור על רמת קושי מתאימה לכיתה.
-החזר בלבד בפורמט:
-שאלה | תשובה | רמז`,[subject,grade,topic,count]);
+החזר בדיוק ${count} שורות בלבד.
+כל שאלה חייבת להופיע בשורה נפרדת בפורמט:
+שאלה | תשובה | רמז
+אין להוסיף מספור, bullets, כותרות, שורות ריקות או הסברים.
+החזר רק את השורות עצמן בתוך חלונית קוד אחת.`,[subject,grade,topic,count]);
 
   const secretPrompt=useMemo(()=>`צור משפט סיום קצר, חיובי ומשמעותי בנושא ${topic||"[נושא]"}, המתאים לתלמידי כיתה ${grade||"[כיתה]"}.
 המשפט חייב להכיל בדיוק ${count} אותיות, ללא ספירת רווחים, סימני פיסוק, מספרים או מקפים.
@@ -152,36 +155,80 @@ export default function Home(){
     requestAnimationFrame(()=>window.scrollTo({top:0,behavior:"smooth"}));
   }
 
-  function openTeacher(){
-    const showTeacher=()=>{
-      flushSync(()=>setView("teacher"));
-      window.scrollTo({top:0,behavior:"instant"});
-    };
+  function restoreDraft(){
+    try{
+      const d=JSON.parse(localStorage.getItem("linkupTeacherDraftV1")||"null");
+      if(!d)return false;
+      setTopic(d.topic||"");setSubject(d.subject||"");setGrade(d.grade||"");setInstructions(d.instructions||"");
+      setCount([20,25,30,35,40].includes(Number(d.count))?Number(d.count):30);
+      setTheme(d.theme||"שרשרת זוהרת");setSecret(d.secret||"");
+      setItems(Array.isArray(d.items)?d.items:[]);
+      setBank(Array.isArray(d.items)&&d.items.length?d.items.map(x=>[x.question,x.answer,x.hint].join(" | ")).join("\n"):(d.bank||""));
+      setBankLoaded(Array.isArray(d.items)&&d.items.length>0);
+      return !!(d.topic||d.bank||(Array.isArray(d.items)&&d.items.length));
+    }catch{return false}
+  }
 
-    if(document.startViewTransition){
-      document.startViewTransition(showTeacher);
-    }else{
-      showTeacher();
+  async function openTeacher(){
+    const {data}=await xsiteCore.auth.getSession();
+    const user=data.session?.user||null;
+    if(!user){
+      const {error}=await xsiteCore.auth.signInWithOAuth({
+        provider:"google",
+        options:{redirectTo:"https://linkup-classroom-live.vercel.app/?teacher=1",queryParams:{access_type:"offline",prompt:"select_account"}}
+      });
+      if(error)setRoomError("לא הצלחנו לפתוח את ההתחברות ל־Google.");
+      return;
     }
+    setCoreUser(user);restoreDraft();setDraftReady(true);
+    const showTeacher=()=>{flushSync(()=>setView("teacherEntry"));window.scrollTo({top:0,behavior:"instant"});};
+    if(document.startViewTransition)document.startViewTransition(showTeacher);else showTeacher();
+  }
+
+  async function loadSavedProjects(){
+    const {data:sessionData}=await xsiteCore.auth.getSession();
+    const user=sessionData.session?.user||coreUser;
+    if(!user){await openTeacher();return}
+    setLoadPanel(true);setCodePanel(false);setRoomError("");
+    const {data,error}=await xsiteCore.from("teacher_projects")
+      .select("id,title,updated_at").eq("teacher_id",user.id).eq("app_id","linkup").order("updated_at",{ascending:false}).limit(50);
+    if(error){setRoomError("לא הצלחנו לטעון פעילויות שמורות.");return}
+    setSavedProjects(data||[]);
+  }
+
+  function startNewActivity(){
+    if((topic||bank||items.length)&&!window.confirm("לפתוח פעילות חדשה? הטיוטה הנוכחית תוחלף."))return;
+    setTopic("");setSubject("");setGrade("");setInstructions("");setCount(30);setBank("");setBankLoaded(false);
+    setItems([]);setSecret("");setTheme("שרשרת זוהרת");setLibraryProjectId(null);setLibrarySaved(false);setEditorOpen(false);
+    try{localStorage.removeItem("linkupTeacherDraftV1")}catch{}
+    setDraftReady(true);setView("teacher");setStep(1);
+  }
+
+  function openExistingByCode(){
+    const code=String(existingCode||"").replace(/\D/g,"").slice(0,6);
+    if(code.length!==6){setRoomError("יש להזין קוד בן 6 ספרות.");return}
+    try{
+      const saved=JSON.parse(localStorage.getItem("linkupLive:"+code)||"null");
+      if(saved?.teacherToken){
+        setRoomCode(code);setTeacherToken(saved.teacherToken);setStudentLink("https://linkup-classroom-live.vercel.app/join/"+code);setView("lobby");return;
+      }
+    }catch{}
+    setRoomError("לא נמצאה הרשאת מורה לקוד הזה בדפדפן זה.");
   }
 
   function loadBank(){
-    const parsed=bank.split(/\r?\n/)
-      .map(x=>x.trim())
-      .filter(Boolean)
-      .map((line,index)=>{
-        const parts=line.split("|").map(x=>x.trim());
-        if(parts.length<3) return null;
-        return {id:index+1,question:parts[0],answer:parts[1],hint:parts.slice(2).join(" | ")};
-      })
-      .filter(Boolean);
-    setItems(parsed);
-    setBankLoaded(parsed.length>0);
-    if(parsed.length>0){
-      setTimeout(()=>{
-        document.getElementById("items-editor")?.scrollIntoView({behavior:"smooth",block:"start"});
-      },120);
-    }
+    const lines=bank.replace(/```(?:text|txt|md|markdown)?/gi,"").replace(/```/g,"").split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+    const parsed=[],bad=[];
+    lines.forEach((line,index)=>{
+      const cleanLine=line.replace(/^\s*(?:[-•*]+|\d+[.)-])\s*/,"");
+      const parts=cleanLine.split("|").map(x=>x.trim());
+      if(parts.length===3&&parts.every(Boolean))parsed.push({id:index+1,question:parts[0],answer:parts[1],hint:parts[2]});
+      else bad.push(index+1);
+    });
+    setItems(parsed);setBankLoaded(parsed.length>0);setEditorOpen(false);
+    if(!parsed.length)setRoomError("לא זוהו פריטים. כל שורה צריכה להיות: שאלה | תשובה | רמז");
+    else if(bad.length)setRoomError("נקלטו "+parsed.length+" פריטים. "+bad.length+" שורות לא נקלטו: "+bad.slice(0,4).join(", ")+(bad.length>4?"…":""));
+    else setRoomError("");
   }
 
   function updateItem(id,key,value){
