@@ -50,6 +50,53 @@ export default function Home(){
   const [lobbyRoom,setLobbyRoom]=useState(null);
   const [projector,setProjector]=useState(false);
   const [rewardStage,setRewardStage]=useState(0);
+  const [coreUser,setCoreUser]=useState(null);
+  const [savedProjects,setSavedProjects]=useState([]);
+  const [loadPanel,setLoadPanel]=useState(false);
+  const [codePanel,setCodePanel]=useState(false);
+  const [existingCode,setExistingCode]=useState("");
+  const [editorOpen,setEditorOpen]=useState(false);
+  const [libraryProjectId,setLibraryProjectId]=useState(null);
+  const [librarySaved,setLibrarySaved]=useState(false);
+  const [savingLibrary,setSavingLibrary]=useState(false);
+  const [draftReady,setDraftReady]=useState(false);
+
+  useEffect(()=>{
+    let mounted=true;
+    async function initXsite(){
+      const params=new URLSearchParams(window.location.search);
+      const editId=(params.get("edit")||"").trim();
+      const teacherRequested=params.get("teacher")==="1";
+      const {data}=await xsiteCore.auth.getSession();
+      if(!mounted)return;
+      const user=data.session?.user||null;
+      setCoreUser(user);
+      if(editId&&!user){
+        await xsiteCore.auth.signInWithOAuth({provider:"google",options:{redirectTo:"https://linkup-classroom-live.vercel.app/?edit="+encodeURIComponent(editId),queryParams:{access_type:"offline",prompt:"select_account"}}});
+        return;
+      }
+      if(user&&editId){
+        const {data:project,error}=await xsiteCore.from("teacher_projects").select("id,title,payload").eq("id",editId).eq("app_id","linkup").eq("teacher_id",user.id).maybeSingle();
+        if(error||!project){setRoomError("לא הצלחנו לפתוח את פעילות LinkUp מהספרייה.");setView("teacher");setDraftReady(true);return;}
+        const d=project.payload||{};
+        setLibraryProjectId(project.id);setLibrarySaved(true);
+        setTopic(d.topic||project.title||"");setSubject(d.subject||"");setGrade(d.grade||"");setInstructions(d.instructions||"");
+        setCount([20,25,30,35,40].includes(Number(d.count))?Number(d.count):30);
+        setTheme(d.theme||"שרשרת זוהרת");setSecret(d.secret||"");
+        const loaded=Array.isArray(d.items)?d.items:[];
+        setItems(loaded);setBank(loaded.map(x=>[x.question,x.answer,x.hint].join(" | ")).join("\n"));setBankLoaded(loaded.length>0);
+        setEditorOpen(false);setView("teacher");setStep(1);setDraftReady(true);return;
+      }
+      if(user&&teacherRequested){restoreDraft();setView("teacherEntry");setDraftReady(true);}
+    }
+    initXsite();
+    return()=>{mounted=false};
+  },[]);
+
+  useEffect(()=>{
+    if(!draftReady||!["teacher","preview"].includes(view))return;
+    try{localStorage.setItem("linkupTeacherDraftV1",JSON.stringify({topic,subject,grade,instructions,count,theme,secret,items,bank,updatedAt:Date.now()}));}catch{}
+  },[draftReady,view,topic,subject,grade,instructions,count,theme,secret,items,bank]);
 
   useEffect(()=>{
     if(!projector||lobbyRoom?.phase!=="correct"){setRewardStage(0);return}
