@@ -79,6 +79,28 @@ export async function GET(req){
     });
   }
 
+  if(role==="preview"){
+    const t=u.searchParams.get("token");
+    if(!teacherOK(room,t))return Response.json({error:"forbidden"},{status:403});
+    const active=["playing","paused"].includes(room.status);
+    const item=active?(room.items||[])[room.progress||0]:null;
+    return Response.json({
+      ...publicRoom(room),
+      preview:true,
+      participant:{id:"preview",name:"תצוגת מורה",joinedAt:Date.now()},
+      turn:item?{
+        isMyTurn:true,
+        participantName:"תצוגת מורה",
+        question:item.question||"",
+        hint:item.hint||"",
+        answerLength:(item.answer||"").replace(/\s/g,"").length,
+        answerPattern:(item.answer||"").split(/(\s+)/).map(x=>/^\s+$/.test(x)?" ":x.length),
+        answerChars:(item.answer||"").replace(/\s/g,"").split(""),
+        hintedLetters:[]
+      }:null
+    });
+  }
+
   if(role==="student"){
     const pid=u.searchParams.get("participantId");
     const p=room.participants?.[pid];
