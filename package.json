@@ -12,6 +12,7 @@
     "react": "19.1.7",
     "react-dom": "19.1.7",
     "qrcode.react": "4.2.0",
-    "@vercel/functions": "^2.2.1"
+    "@vercel/functions": "^2.2.1",
+    "@supabase/supabase-js": "^2.58.0"
   }
 }
