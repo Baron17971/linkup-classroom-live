@@ -3,7 +3,7 @@
 import {useEffect,useMemo,useState} from "react";
 import {flushSync} from "react-dom";
 import {QRCodeSVG} from "qrcode.react";
-import {xsiteCore} from "./lib/xsiteCore";
+import {xsiteCore,consumeXsiteAuthBridge,redirectToXsiteGoogle} from "./lib/xsiteCore";
 
 const steps=[
   {n:1,label:"פרטי הפעילות"},
@@ -67,12 +67,13 @@ export default function Home(){
       const params=new URLSearchParams(window.location.search);
       const editId=(params.get("edit")||"").trim();
       const teacherRequested=params.get("teacher")==="1";
+      await consumeXsiteAuthBridge();
       const {data}=await xsiteCore.auth.getSession();
       if(!mounted)return;
       const user=data.session?.user||null;
       setCoreUser(user);
       if(editId&&!user){
-        await xsiteCore.auth.signInWithOAuth({provider:"google",options:{redirectTo:"https://linkup-classroom-live.vercel.app/?edit="+encodeURIComponent(editId),queryParams:{access_type:"offline",prompt:"select_account"}}});
+        redirectToXsiteGoogle("https://linkup-classroom-live.vercel.app/?edit="+encodeURIComponent(editId),"linkup");
         return;
       }
       if(user&&editId){
@@ -173,11 +174,7 @@ export default function Home(){
     const {data}=await xsiteCore.auth.getSession();
     const user=data.session?.user||null;
     if(!user){
-      const {error}=await xsiteCore.auth.signInWithOAuth({
-        provider:"google",
-        options:{redirectTo:"https://linkup-classroom-live.vercel.app/?teacher=1",queryParams:{access_type:"offline",prompt:"select_account"}}
-      });
-      if(error)setRoomError("לא הצלחנו לפתוח את ההתחברות ל־Google.");
+      redirectToXsiteGoogle("https://linkup-classroom-live.vercel.app/?teacher=1","linkup");
       return;
     }
     setCoreUser(user);restoreDraft();setDraftReady(true);
