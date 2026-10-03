@@ -24,7 +24,7 @@ export async function consumeXsiteAuthBridge(){
 
 export function redirectToXsiteGoogle(targetUrl, appId){
   if(typeof window==="undefined")return;
-  const bridge="https://xsite-live-anats-projects-8c3e7bfa.vercel.app/";
+  const bridge="https://xsite-live.vercel.app/";
   const url=new URL(bridge);
   url.searchParams.set("auth_for",appId);
   url.searchParams.set("next",targetUrl);
