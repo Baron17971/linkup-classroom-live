@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Varela+Round&display=swap');
 *{box-sizing:border-box}
 :root{
   --cream:#fbf7ee;
@@ -9,7 +10,7 @@
   --muted:#748d95;
   --gold:#d7a94b;
 }
-html,body{margin:0;min-height:100%;font-family:Arial,"Noto Sans Hebrew",sans-serif;background:var(--cream);color:var(--ink)}
+html,body{margin:0;min-height:100%;font-family:"Varela Round",sans-serif;background:var(--cream);color:var(--ink)}
 body{direction:rtl}
 button,input,textarea,select{font:inherit}
 button{cursor:pointer}
@@ -861,7 +862,7 @@ textarea{min-height:110px;resize:vertical}
     radial-gradient(circle at 12% 8%,rgba(34,183,178,.10),transparent 30%),
     linear-gradient(180deg,#f9faf6 0%,#f4f0e7 100%);
   color:#233a4f;
-  font-family:"Varela Round","Noto Sans Hebrew",Arial,sans-serif;
+  font-family:"Varela Round",sans-serif;
 }
 .teacher-entry-card{
   width:min(1540px,100%);
