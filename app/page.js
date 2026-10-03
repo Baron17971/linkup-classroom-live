@@ -361,22 +361,21 @@ export default function Home(){
 
   if(view==="teacherEntry"){
     const hasDraft=!!(topic||bank||items.length);
-    return <main className="teacher-shell"><section className="teacher-card">
-      <header className="brand-head">
-        <picture className="brand-responsive"><source media="(min-width:721px)" srcSet="/linkup-hero-desktop.png"/><img src="/linkup-logo2.png" alt="LinkUp — כולנו חלק מהשרשרת" className="brand-responsive-image shared-linkup-logo"/></picture>
-        <div className="brand-copy"><span>צד המורה</span><h1>LinkUp</h1><p>צור פעילות חדשה, טען פעילות קיימת או חזור לכיתה לפי קוד.</p></div>
-      </header>
-      <section className="panel">
-        <div className="lobby-actions">
+    return <main className="teacher-entry-page linkup-teacher-entry"><section className="teacher-entry-card">
+      <picture className="teacher-entry-hero"><source media="(max-width:720px)" srcSet="/linkup-logo2.png"/><img src="/linkup-hero-desktop.png" alt="LinkUp — כולנו חלק מהשרשרת" className="shared-linkup-logo"/></picture>
+      <section className="teacher-entry-content">
+        <h1>כניסת מורה</h1>
+        <p>צרו פעילות חדשה, טענו פעילות קיימת או חזרו לפעילות באמצעות קוד.</p>
+        <div className="teacher-entry-actions">
           {hasDraft&&<button className="next" onClick={()=>{setView("teacher");setStep(1)}}>המשך טיוטה</button>}
           <button className="next" onClick={startNewActivity}>צור פעילות חדשה</button>
           <button className="back" onClick={loadSavedProjects}>טען פעילות קיימת</button>
           <button className="back" onClick={()=>{setCodePanel(true);setLoadPanel(false);setRoomError("")}}>פתח באמצעות קוד</button>
         </div>
-        {loadPanel&&<div className="ai-box"><h3>פעילויות שמורות</h3>{savedProjects.length?
+        {loadPanel&&<div className="ai-box teacher-entry-panel"><h3>פעילויות שמורות</h3>{savedProjects.length?
           <select defaultValue="" onChange={e=>e.target.value&&(window.location.href="/?edit="+encodeURIComponent(e.target.value))}><option value="">בחר פעילות</option>{savedProjects.map(x=><option value={x.id} key={x.id}>{x.title||"LinkUp"}</option>)}</select>
           :<p>אין עדיין פעילויות שמורות.</p>}</div>}
-        {codePanel&&<div className="ai-box"><h3>פתיחה לפי קוד</h3><div className="form-grid"><input inputMode="numeric" maxLength={6} value={existingCode} onChange={e=>setExistingCode(e.target.value)} placeholder="לדוגמה: 482731"/><button className="next" onClick={openExistingByCode}>פתח פעילות</button></div></div>}
+        {codePanel&&<div className="ai-box teacher-entry-panel"><h3>פתיחה לפי קוד</h3><div className="form-grid"><input inputMode="numeric" maxLength={6} value={existingCode} onChange={e=>setExistingCode(e.target.value)} placeholder="לדוגמה: 482731"/><button className="next" onClick={openExistingByCode}>פתח פעילות</button></div></div>}
         {roomError&&<div className="room-error">{roomError}</div>}
       </section>
     </section></main>;
