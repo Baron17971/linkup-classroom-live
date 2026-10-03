@@ -850,3 +850,105 @@ textarea{min-height:110px;resize:vertical}
     margin:0;
   }
 }
+
+
+/* DomiKnow-aligned teacher entry */
+.teacher-entry-page{
+  min-height:100vh;
+  padding:24px 34px 48px;
+  direction:rtl;
+  background:
+    radial-gradient(circle at 12% 8%,rgba(34,183,178,.10),transparent 30%),
+    linear-gradient(180deg,#f9faf6 0%,#f4f0e7 100%);
+  color:#233a4f;
+  font-family:"Varela Round","Noto Sans Hebrew",Arial,sans-serif;
+}
+.teacher-entry-card{
+  width:min(1540px,100%);
+  margin:0 auto;
+}
+.teacher-entry-hero{
+  display:block;
+  width:100%;
+  aspect-ratio:3/1;
+  overflow:hidden;
+  border-radius:30px;
+  background:#eef5f2;
+  box-shadow:0 12px 34px rgba(35,58,79,.10);
+}
+.teacher-entry-hero img{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center;
+}
+.teacher-entry-content{
+  margin-top:24px;
+  padding:34px 44px 32px;
+  background:rgba(255,255,255,.94);
+  border:1px solid #d9e4e1;
+  border-top:5px solid #6f9c9d;
+  border-radius:28px;
+  box-shadow:0 14px 36px rgba(35,58,79,.08);
+  text-align:right;
+}
+.teacher-entry-content h1{
+  margin:0 0 14px;
+  color:#253b50;
+  font-size:clamp(28px,2.5vw,38px);
+  line-height:1.1;
+  font-weight:800;
+  text-align:right;
+}
+.teacher-entry-content>p{
+  margin:0;
+  color:#6d7d88;
+  font-size:18px;
+  line-height:1.55;
+  text-align:right;
+}
+.teacher-entry-actions{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:flex-start;
+  gap:12px;
+  margin-top:24px;
+  direction:rtl;
+}
+.teacher-entry-actions button{
+  min-width:210px;
+  min-height:56px;
+  border-radius:16px;
+  padding:0 22px;
+  font-size:18px;
+  font-weight:800;
+  font-family:inherit;
+}
+.teacher-entry-actions .next{
+  background:linear-gradient(180deg,#63bfc0,#459698);
+  color:#fff;
+  box-shadow:0 8px 18px rgba(69,150,152,.18);
+}
+.teacher-entry-actions .back{
+  background:#f4f6f4;
+  border:1px solid #dfe7e3;
+  color:#47666c;
+  box-shadow:none;
+}
+.teacher-entry-panel{
+  margin-top:18px;
+  max-width:760px;
+  background:#f8faf8;
+  border:1px solid #e0e8e4;
+  text-align:right;
+}
+@media(max-width:720px){
+  .teacher-entry-page{padding:12px 12px 28px}
+  .teacher-entry-hero{aspect-ratio:16/9;border-radius:22px}
+  .teacher-entry-content{margin-top:14px;padding:24px 20px;border-radius:22px}
+  .teacher-entry-content h1{font-size:28px}
+  .teacher-entry-content>p{font-size:15px}
+  .teacher-entry-actions{display:grid;grid-template-columns:1fr;gap:10px}
+  .teacher-entry-actions button{width:100%;min-width:0}
+}
